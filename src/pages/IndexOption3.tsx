@@ -76,50 +76,6 @@ const IndexOption3 = () => {
           </Card>
         </div>
 
-        {/* Browse Section */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold">Browse Reports</h3>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card 
-              className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate("/browse-lost")}
-            >
-              <div className="flex items-center gap-3">
-                <Search className="w-5 h-5 text-secondary" />
-                <div>
-                  <p className="font-semibold">Lost Items</p>
-                  <p className="text-xs text-muted-foreground">View all</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card 
-              className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate("/browse-found")}
-            >
-              <div className="flex items-center gap-3">
-                <Package className="w-5 h-5 text-primary" />
-                <div>
-                  <p className="font-semibold">Found Items</p>
-                  <p className="text-xs text-muted-foreground">View all</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card 
-              className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate("/browse-anonymous")}
-            >
-              <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-anonymous" />
-                <div>
-                  <p className="font-semibold">Anonymous</p>
-                  <p className="text-xs text-muted-foreground">View all</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4">

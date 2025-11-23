@@ -15,6 +15,7 @@ import ReportAnonymous from "./pages/ReportAnonymous";
 import BrowseLost from "./pages/BrowseLost";
 import BrowseFound from "./pages/BrowseFound";
 import BrowseAnonymous from "./pages/BrowseAnonymous";
+import Browse from "./pages/Browse";
 import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/report-lost" element={<ReportLost />} />
           <Route path="/report-found" element={<ReportFound />} />
           <Route path="/report-anonymous" element={<ReportAnonymous />} />
+          <Route path="/browse" element={<Browse />} />
           <Route path="/browse-lost" element={<BrowseLost />} />
           <Route path="/browse-found" element={<BrowseFound />} />
           <Route path="/browse-anonymous" element={<BrowseAnonymous />} />
