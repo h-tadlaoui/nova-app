@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, MapPin, Shield, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import BottomNav from "@/components/BottomNav";
 
 const ReportAnonymous = () => {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ const ReportAnonymous = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
       {/* Header */}
       <header className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
@@ -182,6 +183,8 @@ const ReportAnonymous = () => {
           </form>
         </Card>
       </div>
+      
+      <BottomNav />
     </div>
   );
 };
