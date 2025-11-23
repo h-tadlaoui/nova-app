@@ -3,12 +3,9 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Search, Package, Shield, MapPin, Users } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-
 const IndexOption3 = () => {
   const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen bg-muted/30 pb-20">
+  return <div className="min-h-screen bg-muted/30 pb-20">
       {/* App Bar */}
       <header className="bg-card border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -18,7 +15,7 @@ const IndexOption3 = () => {
 
       <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Hero Card */}
-        <Card className="p-8 bg-gradient-to-br from-primary/10 to-accent/10">
+        <Card className="p-8 bg-gradient-to-br from-primary/10 to-accent/10 py-0">
           <div className="text-center space-y-3">
             <h2 className="text-3xl font-bold">Lost Something?</h2>
             <p className="text-muted-foreground">AI-powered matching connects you with found items</p>
@@ -27,10 +24,7 @@ const IndexOption3 = () => {
 
         {/* Main Actions Grid */}
         <div className="grid md:grid-cols-3 gap-4">
-          <Card 
-            className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-secondary"
-            onClick={() => navigate("/report-lost")}
-          >
+          <Card onClick={() => navigate("/report-lost")} className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-secondary px-[25px] py-[25px]">
             <div className="space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center">
                 <Search className="w-7 h-7 text-secondary" />
@@ -43,10 +37,7 @@ const IndexOption3 = () => {
             </div>
           </Card>
 
-          <Card 
-            className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-primary"
-            onClick={() => navigate("/report-found")}
-          >
+          <Card className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-primary" onClick={() => navigate("/report-found")}>
             <div className="space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
                 <Package className="w-7 h-7 text-primary" />
@@ -59,10 +50,7 @@ const IndexOption3 = () => {
             </div>
           </Card>
 
-          <Card 
-            className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-anonymous"
-            onClick={() => navigate("/report-anonymous")}
-          >
+          <Card className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-anonymous" onClick={() => navigate("/report-anonymous")}>
             <div className="space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-anonymous/10 flex items-center justify-center">
                 <Shield className="w-7 h-7 text-anonymous" />
@@ -98,8 +86,6 @@ const IndexOption3 = () => {
       </div>
       
       <BottomNav />
-    </div>
-  );
+    </div>;
 };
-
 export default IndexOption3;
