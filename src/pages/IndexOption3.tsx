@@ -15,7 +15,7 @@ const IndexOption3 = () => {
 
       <div className="container mx-auto px-4 flex-1 flex flex-col py-4 gap-3 overflow-hidden">
         {/* Hero Card */}
-        <Card className="p-4 bg-gradient-to-br from-primary/10 to-accent/10 flex-shrink-0">
+        <Card className="p-4 bg-gradient-to-br from-primary/10 to-accent/10 flex-shrink-0 py-[4px]">
           <div className="text-center space-y-1">
             <h2 className="text-2xl font-bold">Lost Something?</h2>
             <p className="text-sm text-muted-foreground">AI-powered matching connects you with found items</p>
