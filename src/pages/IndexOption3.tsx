@@ -1,72 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Search, Package, Shield, MapPin, Clock, Users, Menu } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Search, Package, Shield, MapPin, Users } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 const IndexOption3 = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/30 pb-20">
       {/* App Bar */}
       <header className="bg-card border-b border-border">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">FindBack</h1>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Report Item</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => navigate("/report-lost")}>
-                  <Search className="w-4 h-4 mr-2" />
-                  Lost Item
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/report-found")}>
-                  <Package className="w-4 h-4 mr-2" />
-                  Found Item
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/report-anonymous")}>
-                  <Shield className="w-4 h-4 mr-2" />
-                  Anonymous
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuLabel>Browse</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => navigate("/browse-lost")}>
-                  <Search className="w-4 h-4 mr-2" />
-                  Lost Items
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/browse-found")}>
-                  <Package className="w-4 h-4 mr-2" />
-                  Found Items
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/browse-anonymous")}>
-                  <Shield className="w-4 h-4 mr-2" />
-                  Anonymous Items
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuItem onClick={() => navigate("/history")}>
-                  <Clock className="w-4 h-4 mr-2" />
-                  History
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <h1 className="text-2xl font-bold text-center">FindBack</h1>
         </div>
       </header>
 
@@ -194,6 +140,8 @@ const IndexOption3 = () => {
           </Card>
         </div>
       </div>
+      
+      <BottomNav />
     </div>
   );
 };
