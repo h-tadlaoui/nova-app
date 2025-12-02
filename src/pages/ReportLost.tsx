@@ -8,9 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Camera, MapPin, Upload } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
+import AIProcessing from "@/components/AIProcessing";
+import AIMatchResults from "@/components/AIMatchResults";
+import { useAIMatching } from "@/hooks/useAIMatching";
 
 const ReportLost = () => {
   const navigate = useNavigate();
+  const { isProcessing, showResults, matches, startMatching, handleProcessingComplete, closeResults } = useAIMatching();
   const [formData, setFormData] = useState({
     image: null as File | null,
     description: "",
@@ -31,24 +35,30 @@ const ReportLost = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!formData.description || !formData.category) {
       toast.error("Please fill in required fields");
       return;
     }
 
-    toast.success("Lost item report submitted! AI is searching for matches...", {
-      description: "You'll be notified when potential matches are found"
-    });
+    toast.success("Lost item report submitted!");
+    startMatching("lost");
+  };
 
-    // Navigate to browse page or dashboard
-    setTimeout(() => {
-      navigate("/browse-lost");
-    }, 2000);
+  const handleResultsClose = () => {
+    closeResults();
+    navigate("/browse-lost");
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
+      {isProcessing && <AIProcessing onComplete={handleProcessingComplete} />}
+      <AIMatchResults 
+        open={showResults} 
+        onClose={handleResultsClose} 
+        matches={matches} 
+        searchType="lost" 
+      />
+
       {/* Header */}
       <header className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">

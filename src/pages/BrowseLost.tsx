@@ -4,14 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, MapPin, Clock, Filter } from "lucide-react";
+import { ArrowLeft, Search, MapPin, Clock, Filter, Sparkles } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import AIProcessing from "@/components/AIProcessing";
+import AIMatchResults from "@/components/AIMatchResults";
+import { useAIMatching } from "@/hooks/useAIMatching";
 
 const BrowseLost = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const { isProcessing, showResults, matches, startMatching, handleProcessingComplete, closeResults } = useAIMatching();
 
-  // Mock data - will be replaced with real data
   const lostItems = [
     {
       id: 1,
@@ -33,13 +36,25 @@ const BrowseLost = () => {
     },
   ];
 
+  const handleAIMatch = () => {
+    startMatching("lost");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
+      {isProcessing && <AIProcessing onComplete={handleProcessingComplete} />}
+      <AIMatchResults 
+        open={showResults} 
+        onClose={closeResults} 
+        matches={matches} 
+        searchType="lost" 
+      />
+
       {/* Header */}
       <header className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/browse")}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-xl font-bold">Lost Items</h1>
@@ -48,6 +63,16 @@ const BrowseLost = () => {
       </header>
 
       <div className="container mx-auto px-4 py-6">
+        {/* AI Match Button */}
+        <Button 
+          onClick={handleAIMatch}
+          className="w-full mb-6 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+          size="lg"
+        >
+          <Sparkles className="w-5 h-5 mr-2" />
+          Find Matches with AI
+        </Button>
+
         {/* Search & Filters */}
         <div className="mb-6 space-y-3">
           <div className="flex gap-3">

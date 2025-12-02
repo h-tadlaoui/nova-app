@@ -8,9 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Camera, MapPin, Upload } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
+import AIProcessing from "@/components/AIProcessing";
+import AIMatchResults from "@/components/AIMatchResults";
+import { useAIMatching } from "@/hooks/useAIMatching";
 
 const ReportFound = () => {
   const navigate = useNavigate();
+  const { isProcessing, showResults, matches, startMatching, handleProcessingComplete, closeResults } = useAIMatching();
   const [formData, setFormData] = useState({
     image: null as File | null,
     description: "",
@@ -31,7 +35,6 @@ const ReportFound = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation - image is required for found items
     if (!formData.image) {
       toast.error("Photo is required for found item reports");
       return;
@@ -42,17 +45,25 @@ const ReportFound = () => {
       return;
     }
 
-    toast.success("Found item reported! AI is searching for the owner...", {
-      description: "We'll notify you if someone claims this item"
-    });
+    toast.success("Found item reported!");
+    startMatching("found");
+  };
 
-    setTimeout(() => {
-      navigate("/browse-found");
-    }, 2000);
+  const handleResultsClose = () => {
+    closeResults();
+    navigate("/browse-found");
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
+      {isProcessing && <AIProcessing onComplete={handleProcessingComplete} />}
+      <AIMatchResults 
+        open={showResults} 
+        onClose={handleResultsClose} 
+        matches={matches} 
+        searchType="found" 
+      />
+
       {/* Header */}
       <header className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
