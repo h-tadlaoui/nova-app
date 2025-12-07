@@ -9,12 +9,11 @@ import { ArrowLeft, Camera, MapPin, Upload } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import AIProcessing from "@/components/AIProcessing";
-import AIMatchResults from "@/components/AIMatchResults";
 import { useAIMatching } from "@/hooks/useAIMatching";
 
 const ReportFound = () => {
   const navigate = useNavigate();
-  const { isProcessing, showResults, matches, startMatching, handleProcessingComplete, closeResults } = useAIMatching();
+  const { isProcessing, startMatching, handleProcessingComplete } = useAIMatching();
   const [formData, setFormData] = useState({
     image: null as File | null,
     description: "",
@@ -49,20 +48,9 @@ const ReportFound = () => {
     startMatching("found");
   };
 
-  const handleResultsClose = () => {
-    closeResults();
-    navigate("/browse-found");
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
       {isProcessing && <AIProcessing onComplete={handleProcessingComplete} />}
-      <AIMatchResults 
-        open={showResults} 
-        onClose={handleResultsClose} 
-        matches={matches} 
-        searchType="found" 
-      />
 
       {/* Header */}
       <header className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-50">

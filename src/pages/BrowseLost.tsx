@@ -7,13 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Search, MapPin, Clock, Filter, Sparkles } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import AIProcessing from "@/components/AIProcessing";
-import AIMatchResults from "@/components/AIMatchResults";
 import { useAIMatching } from "@/hooks/useAIMatching";
 
 const BrowseLost = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const { isProcessing, showResults, matches, startMatching, handleProcessingComplete, closeResults } = useAIMatching();
+  const { isProcessing, startMatching, handleProcessingComplete } = useAIMatching();
 
   const lostItems = [
     {
@@ -43,12 +42,6 @@ const BrowseLost = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
       {isProcessing && <AIProcessing onComplete={handleProcessingComplete} />}
-      <AIMatchResults 
-        open={showResults} 
-        onClose={closeResults} 
-        matches={matches} 
-        searchType="lost" 
-      />
 
       {/* Header */}
       <header className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-50">

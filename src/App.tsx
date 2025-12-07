@@ -18,6 +18,11 @@ import BrowseAnonymous from "./pages/BrowseAnonymous";
 import Browse from "./pages/Browse";
 import History from "./pages/History";
 import ItemDetail from "./pages/ItemDetail";
+import ClaimItem from "./pages/ClaimItem";
+import VerifyClaims from "./pages/VerifyClaims";
+import ContactExchange from "./pages/ContactExchange";
+import ConfirmRecovery from "./pages/ConfirmRecovery";
+import MatchResults from "./pages/MatchResults";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +44,11 @@ const App = () => (
           <Route path="/browse-anonymous" element={<BrowseAnonymous />} />
           <Route path="/history" element={<History />} />
           <Route path="/item/:id" element={<ItemDetail />} />
+          <Route path="/claim/:id" element={<ClaimItem />} />
+          <Route path="/verify/:id" element={<VerifyClaims />} />
+          <Route path="/contact-exchange/:id" element={<ContactExchange />} />
+          <Route path="/confirm-recovery/:id" element={<ConfirmRecovery />} />
+          <Route path="/match-results" element={<MatchResults />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
