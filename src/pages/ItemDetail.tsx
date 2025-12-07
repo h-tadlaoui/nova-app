@@ -2,14 +2,12 @@ import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, 
   MapPin, 
   Clock, 
   Tag, 
   Palette, 
-  Package, 
   MessageCircle,
   Shield,
   CheckCircle2,
@@ -18,10 +16,6 @@ import {
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import ItemStatusBadge from "@/components/ItemStatusBadge";
-import ClaimDialog from "@/components/ClaimDialog";
-import VerificationDialog from "@/components/VerificationDialog";
-import ContactExchangeDialog from "@/components/ContactExchangeDialog";
-import ConfirmRecoveryDialog from "@/components/ConfirmRecoveryDialog";
 import type { ItemStatus } from "@/types/item";
 
 // Mock item data - in real app this would come from database
@@ -84,31 +78,12 @@ const mockItems: Record<string, {
   },
 };
 
-const mockClaims = [
-  {
-    id: "claim-1",
-    claimantEmail: "user1@email.com",
-    message: "I think this is my wallet. It's brown leather with my initials 'JD' inside.",
-    createdAt: "2024-03-17T10:30:00Z",
-  },
-  {
-    id: "claim-2",
-    claimantEmail: "user2@email.com",
-    message: "This looks like my keys! The dolphin keychain was a gift from my grandmother.",
-    createdAt: "2024-03-17T11:45:00Z",
-  },
-];
-
 const ItemDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "found";
   
-  const [showClaimDialog, setShowClaimDialog] = useState(false);
-  const [showVerificationDialog, setShowVerificationDialog] = useState(false);
-  const [showContactDialog, setShowContactDialog] = useState(false);
-  const [showRecoveryDialog, setShowRecoveryDialog] = useState(false);
   const [itemStatus, setItemStatus] = useState<ItemStatus>("Active");
 
   // Get item based on type and id
@@ -117,34 +92,6 @@ const ItemDetail = () => {
 
   const isOwner = false; // In real app, check if current user is the owner
   const isFinder = true; // In real app, check if current user is the finder
-
-  const handleClaimSubmit = (data: { email: string; phone?: string; message: string }) => {
-    console.log("Claim submitted:", data);
-    setItemStatus("Verification Pending");
-  };
-
-  const handleVerify = (claimId: string) => {
-    console.log("Verified claim:", claimId);
-    setShowVerificationDialog(false);
-    setShowContactDialog(true);
-  };
-
-  const handleReject = (claimId: string) => {
-    console.log("Rejected claim:", claimId);
-  };
-
-  const handleAskQuestion = (claimId: string, question: string) => {
-    console.log("Asked question:", claimId, question);
-  };
-
-  const handleConfirmHandover = () => {
-    setItemStatus("Item on its way");
-    setShowContactDialog(false);
-  };
-
-  const handleConfirmRecovery = () => {
-    setItemStatus("Recovered");
-  };
 
   const getBackPath = () => {
     switch (item.type) {
@@ -270,7 +217,7 @@ const ItemDetail = () => {
             <Button 
               className="w-full" 
               size="lg"
-              onClick={() => setShowClaimDialog(true)}
+              onClick={() => navigate(`/claim/${id}?category=${item.category}`)}
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               Claim This Item
@@ -282,7 +229,7 @@ const ItemDetail = () => {
             <Button 
               className="w-full" 
               size="lg"
-              onClick={() => setShowVerificationDialog(true)}
+              onClick={() => navigate(`/verify/${id}`)}
             >
               <Shield className="w-5 h-5 mr-2" />
               Review Claims ({item.claimsCount})
@@ -294,7 +241,7 @@ const ItemDetail = () => {
             <Button 
               className="w-full bg-accent hover:bg-accent/90" 
               size="lg"
-              onClick={() => setShowRecoveryDialog(true)}
+              onClick={() => navigate(`/confirm-recovery/${id}?category=${item.category}`)}
             >
               <CheckCircle2 className="w-5 h-5 mr-2" />
               Confirm Item Received
@@ -305,7 +252,7 @@ const ItemDetail = () => {
           {itemStatus === "Verification Pending" && (
             <Card className="p-4 bg-yellow-500/10 border-yellow-500/30">
               <p className="text-sm text-center text-muted-foreground">
-                ⏳ Waiting for finder to verify your claim
+                Waiting for finder to verify your claim
               </p>
             </Card>
           )}
@@ -313,7 +260,7 @@ const ItemDetail = () => {
           {itemStatus === "Item on its way" && isFinder && (
             <Card className="p-4 bg-primary/10 border-primary/30">
               <p className="text-sm text-center text-muted-foreground">
-                🚚 Waiting for owner to confirm receipt
+                Waiting for owner to confirm receipt
               </p>
             </Card>
           )}
@@ -330,41 +277,6 @@ const ItemDetail = () => {
           )}
         </div>
       </div>
-
-      {/* Dialogs */}
-      <ClaimDialog
-        open={showClaimDialog}
-        onClose={() => setShowClaimDialog(false)}
-        itemCategory={item.category}
-        onSubmit={handleClaimSubmit}
-      />
-
-      <VerificationDialog
-        open={showVerificationDialog}
-        onClose={() => setShowVerificationDialog(false)}
-        claims={mockClaims}
-        onVerify={handleVerify}
-        onReject={handleReject}
-        onAskQuestion={handleAskQuestion}
-      />
-
-      <ContactExchangeDialog
-        open={showContactDialog}
-        onClose={() => setShowContactDialog(false)}
-        contactInfo={{
-          email: item.contactEmail || "owner@email.com",
-          phone: item.contactPhone,
-        }}
-        otherPartyRole="owner"
-        onConfirmHandover={handleConfirmHandover}
-      />
-
-      <ConfirmRecoveryDialog
-        open={showRecoveryDialog}
-        onClose={() => setShowRecoveryDialog(false)}
-        itemCategory={item.category}
-        onConfirm={handleConfirmRecovery}
-      />
 
       <BottomNav />
     </div>

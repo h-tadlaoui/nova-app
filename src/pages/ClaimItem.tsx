@@ -1,27 +1,20 @@
 import { useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { MessageCircle, Mail, Phone, Send } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, Mail, Phone, Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import BottomNav from "@/components/BottomNav";
 
-interface ClaimDialogProps {
-  open: boolean;
-  onClose: () => void;
-  itemCategory: string;
-  onSubmit: (data: { email: string; phone?: string; message: string }) => void;
-}
+const ClaimItem = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const category = searchParams.get("category") || "Item";
 
-const ClaimDialog = ({ open, onClose, itemCategory, onSubmit }: ClaimDialogProps) => {
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -36,28 +29,40 @@ const ClaimDialog = ({ open, onClose, itemCategory, onSubmit }: ClaimDialogProps
       return;
     }
 
-    onSubmit(formData);
     toast.success("Claim submitted!", {
       description: "The finder will review your claim and contact you"
     });
-    onClose();
-    setFormData({ email: "", phone: "", message: "" });
+    navigate("/history");
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MessageCircle className="w-5 h-5 text-primary" />
-            Claim This Item
-          </DialogTitle>
-          <DialogDescription>
-            Submit a claim for this {itemCategory}. The finder will verify your ownership.
-          </DialogDescription>
-        </DialogHeader>
+    <div className="min-h-screen bg-background pb-20">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
+        <div className="flex items-center gap-3 p-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-lg font-semibold">Claim Item</h1>
+            <p className="text-xs text-muted-foreground">{category}</p>
+          </div>
+        </div>
+      </header>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <main className="p-4 space-y-6">
+        <Card className="p-4 bg-primary/5 border-primary/20">
+          <div className="flex items-start gap-3">
+            <MessageCircle className="w-5 h-5 text-primary mt-0.5" />
+            <div>
+              <h3 className="font-medium text-sm">Submit Your Claim</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Provide details that prove this item belongs to you. The finder will verify your claim.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="claim-email">Your Email *</Label>
             <div className="relative">
@@ -98,7 +103,7 @@ const ClaimDialog = ({ open, onClose, itemCategory, onSubmit }: ClaimDialogProps
               placeholder="Include specific details like brand, color, distinctive marks, or any unique identifiers that prove this is your item..."
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className="min-h-[100px]"
+              className="min-h-[150px]"
               required
             />
             <p className="text-xs text-muted-foreground">
@@ -106,19 +111,21 @@ const ClaimDialog = ({ open, onClose, itemCategory, onSubmit }: ClaimDialogProps
             </p>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={() => navigate(-1)} className="flex-1">
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="flex-1">
               <Send className="w-4 h-4 mr-2" />
               Submit Claim
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </main>
+
+      <BottomNav />
+    </div>
   );
 };
 
-export default ClaimDialog;
+export default ClaimItem;

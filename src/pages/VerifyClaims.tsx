@@ -1,19 +1,13 @@
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Shield, HelpCircle, CheckCircle2, XCircle, Send, User, Clock } from "lucide-react";
+import { ArrowLeft, Shield, HelpCircle, CheckCircle2, XCircle, User, Clock } from "lucide-react";
 import { toast } from "sonner";
+import BottomNav from "@/components/BottomNav";
 
 interface Claim {
   id: string;
@@ -22,79 +16,93 @@ interface Claim {
   createdAt: string;
 }
 
-interface VerificationDialogProps {
-  open: boolean;
-  onClose: () => void;
-  claims: Claim[];
-  onVerify: (claimId: string) => void;
-  onReject: (claimId: string) => void;
-  onAskQuestion: (claimId: string, question: string) => void;
-}
+// Mock claims data
+const mockClaims: Claim[] = [
+  {
+    id: "claim-1",
+    claimantEmail: "john@example.com",
+    message: "This is my black iPhone 14 Pro. It has a small scratch on the back near the camera and a blue silicone case. The lock screen wallpaper is a picture of my dog.",
+    createdAt: "2024-01-15T10:30:00Z"
+  },
+  {
+    id: "claim-2",
+    claimantEmail: "jane@example.com",
+    message: "I lost my phone at Central Park. It's a black iPhone.",
+    createdAt: "2024-01-14T15:45:00Z"
+  }
+];
 
-const VerificationDialog = ({ 
-  open, 
-  onClose, 
-  claims, 
-  onVerify, 
-  onReject,
-  onAskQuestion 
-}: VerificationDialogProps) => {
+const VerifyClaims = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
+  const [claims] = useState<Claim[]>(mockClaims);
 
   const handleAskQuestion = () => {
     if (!selectedClaim || !question.trim()) {
       toast.error("Please enter a verification question");
       return;
     }
-    onAskQuestion(selectedClaim, question);
     toast.success("Question sent to claimant");
     setQuestion("");
   };
 
   const handleVerify = (claimId: string) => {
-    onVerify(claimId);
     toast.success("Ownership verified!", {
       description: "Contact information will be exchanged"
     });
-    onClose();
+    navigate(`/contact-exchange/${id}?role=finder`);
   };
 
   const handleReject = (claimId: string) => {
-    onReject(claimId);
     toast.info("Claim rejected");
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-primary" />
-            Verify Ownership
-          </DialogTitle>
-          <DialogDescription>
-            Review claims and verify the rightful owner by asking questions
-          </DialogDescription>
-        </DialogHeader>
+    <div className="min-h-screen bg-background pb-20">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
+        <div className="flex items-center gap-3 p-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-lg font-semibold">Verify Claims</h1>
+            <p className="text-xs text-muted-foreground">{claims.length} pending claims</p>
+          </div>
+        </div>
+      </header>
 
-        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-          {claims.length > 0 ? (
-            claims.map((claim) => (
+      <main className="p-4 space-y-4">
+        <Card className="p-4 bg-primary/5 border-primary/20">
+          <div className="flex items-start gap-3">
+            <Shield className="w-5 h-5 text-primary mt-0.5" />
+            <div>
+              <h3 className="font-medium text-sm">Review Claims</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Ask verification questions to confirm ownership before sharing contact info.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {claims.length > 0 ? (
+          <div className="space-y-4">
+            {claims.map((claim) => (
               <Card 
                 key={claim.id} 
-                className={`p-4 cursor-pointer transition-all ${
+                className={`p-4 transition-all ${
                   selectedClaim === claim.id 
                     ? "border-primary ring-2 ring-primary/20" 
-                    : "hover:border-muted-foreground/30"
+                    : ""
                 }`}
                 onClick={() => setSelectedClaim(claim.id)}
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="w-4 h-4 text-primary" />
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-5 h-5 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm font-medium">{claim.claimantEmail}</p>
@@ -114,17 +122,16 @@ const VerificationDialog = ({
                   </div>
 
                   {selectedClaim === claim.id && (
-                    <div className="space-y-3 pt-2 border-t">
+                    <div className="space-y-4 pt-3 border-t">
                       <div className="space-y-2">
-                        <Label className="text-xs">Ask a verification question</Label>
+                        <Label className="text-sm">Ask a verification question</Label>
                         <Textarea
                           placeholder="e.g., What color is the phone case? Is there a scratch on the back?"
                           value={question}
                           onChange={(e) => setQuestion(e.target.value)}
-                          className="min-h-[60px]"
+                          className="min-h-[80px]"
                         />
                         <Button 
-                          size="sm" 
                           variant="outline" 
                           onClick={handleAskQuestion}
                           className="w-full"
@@ -134,9 +141,8 @@ const VerificationDialog = ({
                         </Button>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <Button 
-                          size="sm" 
                           className="flex-1"
                           onClick={() => handleVerify(claim.id)}
                         >
@@ -144,7 +150,6 @@ const VerificationDialog = ({
                           Verify Owner
                         </Button>
                         <Button 
-                          size="sm" 
                           variant="destructive"
                           onClick={() => handleReject(claim.id)}
                         >
@@ -156,26 +161,22 @@ const VerificationDialog = ({
                   )}
                 </div>
               </Card>
-            ))
-          ) : (
-            <Card className="p-8 text-center">
-              <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h4 className="font-semibold mb-2">No Claims Yet</h4>
-              <p className="text-sm text-muted-foreground">
-                You'll be notified when someone claims this item
-              </p>
-            </Card>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <Card className="p-8 text-center">
+            <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h4 className="font-semibold mb-2">No Claims Yet</h4>
+            <p className="text-sm text-muted-foreground">
+              You'll be notified when someone claims this item
+            </p>
+          </Card>
+        )}
+      </main>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="w-full">
-            Close
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <BottomNav />
+    </div>
   );
 };
 
-export default VerificationDialog;
+export default VerifyClaims;
