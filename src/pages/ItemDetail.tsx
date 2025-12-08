@@ -12,7 +12,9 @@ import {
   Shield,
   CheckCircle2,
   Users,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Mail,
+  Phone
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import ItemStatusBadge from "@/components/ItemStatusBadge";
@@ -150,6 +152,44 @@ const ItemDetail = () => {
                 </p>
               </div>
             </div>
+          </Card>
+        )}
+
+        {/* Finder Contact Info for Anonymous Items */}
+        {item.type === "anonymous" && (item.contactEmail || item.contactPhone) && (
+          <Card className="p-6 space-y-4">
+            <h2 className="font-semibold text-lg">Contact Finder</h2>
+            <div className="space-y-3">
+              {item.contactEmail && (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Email</p>
+                    <a href={`mailto:${item.contactEmail}`} className="font-medium text-primary hover:underline">
+                      {item.contactEmail}
+                    </a>
+                  </div>
+                </div>
+              )}
+              {item.contactPhone && (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Phone className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Phone</p>
+                    <a href={`tel:${item.contactPhone}`} className="font-medium text-primary hover:underline">
+                      {item.contactPhone}
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Reach out to the finder and describe your item to verify ownership.
+            </p>
           </Card>
         )}
 
