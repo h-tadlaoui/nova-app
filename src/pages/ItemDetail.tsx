@@ -66,8 +66,8 @@ const mockItems: Record<string, {
     contactPhone: "+1234567890",
     claimsCount: 2,
   },
-  "anon-1": {
-    id: "anon-1",
+  "anonymous-1": {
+    id: "anonymous-1",
     type: "anonymous",
     category: "Electronic Device",
     description: "", // Hidden for anonymous
