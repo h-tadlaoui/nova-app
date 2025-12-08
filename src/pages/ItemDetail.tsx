@@ -152,10 +152,7 @@ const ItemDetail = () => {
             </p>
             <Button 
               className="w-full"
-              onClick={() => {
-                // In real app, this would send a contact request
-                navigate("/notifications");
-              }}
+              onClick={() => navigate(`/request-contact/${id}?category=${item.category}`)}
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               Request Contact
