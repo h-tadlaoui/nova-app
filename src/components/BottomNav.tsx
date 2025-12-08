@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Search, Bell, FileText } from "lucide-react";
+import { Home, Search, FileText, Clock, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BottomNav = () => {
@@ -10,6 +10,7 @@ const BottomNav = () => {
     { icon: Home, label: "Home", path: "/" },
     { icon: Search, label: "Browse", path: "/browse" },
     { icon: FileText, label: "My Reports", path: "/my-reports" },
+    { icon: Clock, label: "History", path: "/history" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
   ];
 
