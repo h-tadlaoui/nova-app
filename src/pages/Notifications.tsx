@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Bell, Mail, Phone, MapPin, Clock, CheckCircle2, ChevronRight, HelpCircle } from "lucide-react";
+import { ArrowLeft, MessageSquare, Mail, Phone, MapPin, Clock, CheckCircle2, ChevronRight, HelpCircle, Search, Eye, Package } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+
+type ReportOrigin = "lost" | "found" | "anonymous";
 
 interface ContactRequest {
   id: string;
@@ -15,6 +18,7 @@ interface ContactRequest {
   finderEmail?: string;
   finderPhone?: string;
   status: "approved" | "pending" | "denied";
+  origin: ReportOrigin;
 }
 
 // Mock contact requests - in real app this would come from database
@@ -28,27 +32,41 @@ const mockContactRequests: ContactRequest[] = [
     finderEmail: "finder@email.com",
     finderPhone: "+1234567890",
     status: "approved",
+    origin: "anonymous",
   },
   {
     id: "2",
-    itemId: "anon-2",
+    itemId: "lost-2",
     itemCategory: "Wallet",
     itemLocation: "Bus station platform 3",
     requestDate: "2024-03-15",
     status: "pending",
+    origin: "lost",
   },
   {
     id: "3",
-    itemId: "anon-3",
+    itemId: "found-3",
     itemCategory: "Bag",
     itemLocation: "Train Station",
     requestDate: "2024-03-14",
     status: "denied",
+    origin: "found",
+  },
+  {
+    id: "4",
+    itemId: "lost-4",
+    itemCategory: "Keys",
+    itemLocation: "Coffee Shop",
+    requestDate: "2024-03-13",
+    finderEmail: "helper@email.com",
+    status: "approved",
+    origin: "lost",
   },
 ];
 
 const Notifications = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("approved");
 
   const approvedRequests = mockContactRequests.filter(r => r.status === "approved");
   const pendingRequests = mockContactRequests.filter(r => r.status === "pending");
@@ -65,15 +83,47 @@ const Notifications = () => {
     }
   };
 
+  const renderOriginBadge = (origin: ReportOrigin) => {
+    switch (origin) {
+      case "lost":
+        return (
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-xs flex items-center gap-1">
+            <Search className="w-2.5 h-2.5" />
+            Lost
+          </Badge>
+        );
+      case "found":
+        return (
+          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs flex items-center gap-1">
+            <Eye className="w-2.5 h-2.5" />
+            Found
+          </Badge>
+        );
+      case "anonymous":
+        return (
+          <Badge variant="outline" className="bg-purple-500/10 text-purple-600 border-purple-500/20 text-xs flex items-center gap-1">
+            <Package className="w-2.5 h-2.5" />
+            Anonymous
+          </Badge>
+        );
+    }
+  };
+
+  const getItemPath = (request: ContactRequest) => {
+    const idPart = request.itemId.split('-')[1];
+    return `/item/${idPart}?type=${request.origin}`;
+  };
+
   const renderRequestCard = (request: ContactRequest) => (
     <Card key={request.id} className="p-4 space-y-3">
       <div 
         className="flex items-center justify-between cursor-pointer"
-        onClick={() => navigate(`/item/${request.itemId.split('-')[1]}?type=anonymous`)}
+        onClick={() => navigate(getItemPath(request))}
       >
         <div className="space-y-1 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold">{request.itemCategory}</h3>
+            {renderOriginBadge(request.origin)}
             {renderStatusBadge(request.status)}
           </div>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -143,8 +193,8 @@ const Notifications = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-primary" />
-            <h1 className="text-xl font-bold">Notifications</h1>
+            <MessageSquare className="w-5 h-5 text-primary" />
+            <h1 className="text-xl font-bold">Requests</h1>
           </div>
         </div>
       </header>
@@ -165,7 +215,7 @@ const Notifications = () => {
 
         {/* Tabs for Approved/Pending/Denied */}
         {mockContactRequests.length > 0 ? (
-          <Tabs defaultValue="approved" className="space-y-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="approved" className="flex items-center gap-1 text-xs sm:text-sm">
                 <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -209,7 +259,7 @@ const Notifications = () => {
                 deniedRequests.map(renderRequestCard)
               ) : (
                 <Card className="p-8 text-center">
-                  <Bell className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                  <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
                   <h3 className="font-semibold mb-1">No denied requests</h3>
                   <p className="text-sm text-muted-foreground">Denied requests will appear here</p>
                 </Card>
@@ -218,8 +268,8 @@ const Notifications = () => {
           </Tabs>
         ) : (
           <Card className="p-12 text-center">
-            <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-medium text-lg mb-2">No notifications yet</h3>
+            <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="font-medium text-lg mb-2">No requests yet</h3>
             <p className="text-muted-foreground text-sm">
               Your contact requests will appear here
             </p>
