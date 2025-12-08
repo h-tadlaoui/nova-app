@@ -23,6 +23,7 @@ import ContactExchange from "./pages/ContactExchange";
 import ConfirmRecovery from "./pages/ConfirmRecovery";
 import MatchResults from "./pages/MatchResults";
 import MyReports from "./pages/MyReports";
+import ReportDetail from "./pages/ReportDetail";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/confirm-recovery/:id" element={<ConfirmRecovery />} />
           <Route path="/match-results" element={<MatchResults />} />
           <Route path="/my-reports" element={<MyReports />} />
+          <Route path="/my-reports/:id" element={<ReportDetail />} />
           <Route path="/notifications" element={<Notifications />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
