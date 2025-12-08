@@ -23,7 +23,7 @@ import VerifyClaims from "./pages/VerifyClaims";
 import ContactExchange from "./pages/ContactExchange";
 import ConfirmRecovery from "./pages/ConfirmRecovery";
 import MatchResults from "./pages/MatchResults";
-import AIMatching from "./pages/AIMatching";
+import MyReports from "./pages/MyReports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,7 +50,7 @@ const App = () => (
           <Route path="/contact-exchange/:id" element={<ContactExchange />} />
           <Route path="/confirm-recovery/:id" element={<ConfirmRecovery />} />
           <Route path="/match-results" element={<MatchResults />} />
-          <Route path="/ai-matching" element={<AIMatching />} />
+          <Route path="/my-reports" element={<MyReports />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
