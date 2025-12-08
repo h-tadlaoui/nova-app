@@ -4,9 +4,30 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Sparkles, MapPin, Clock, Search, Package } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Sparkles, MapPin, Clock, Search, Package, CheckCircle2, XCircle, User, Mail, Phone, PartyPopper } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import AIProcessing from "@/components/AIProcessing";
+
+interface MatchInfo {
+  userId: string;
+  userName: string;
+  itemDescription: string;
+  contactRequestStatus: "pending" | "approved" | "denied";
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
+interface ReportItem {
+  id: string;
+  type: "lost" | "found";
+  category: string;
+  description: string;
+  location: string;
+  date: string;
+  status: "Active" | "Matched" | "Recovered";
+  matchInfo?: MatchInfo;
+}
 
 const MyReports = () => {
   const navigate = useNavigate();
@@ -14,32 +35,55 @@ const MyReports = () => {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [matchType, setMatchType] = useState<"lost" | "found" | null>(null);
 
-  // Mock user's reports - in production this would come from the database
-  const myLostItems = [
+  // Mock user's reports with match info
+  const myLostItems: ReportItem[] = [
     {
       id: "lost-1",
-      type: "lost" as const,
+      type: "lost",
       category: "Phone",
       description: "Black iPhone 13, cracked screen protector",
       location: "Central Park",
       date: "2024-03-15",
-      status: "Active",
+      status: "Matched",
+      matchInfo: {
+        userId: "user-123",
+        userName: "John D.",
+        itemDescription: "Found black iPhone near Central Park bench",
+        contactRequestStatus: "approved",
+        contactEmail: "john.d@email.com",
+        contactPhone: "+1 555-123-4567",
+      },
     },
     {
       id: "lost-2",
-      type: "lost" as const,
+      type: "lost",
       category: "Wallet",
       description: "Brown leather wallet with cards",
       location: "Downtown Coffee Shop",
       date: "2024-03-14",
+      status: "Matched",
+      matchInfo: {
+        userId: "user-456",
+        userName: "Sarah M.",
+        itemDescription: "Brown wallet found at coffee shop",
+        contactRequestStatus: "pending",
+      },
+    },
+    {
+      id: "lost-3",
+      type: "lost",
+      category: "Headphones",
+      description: "AirPods Pro in white case",
+      location: "Gym on 5th Ave",
+      date: "2024-03-12",
       status: "Active",
     },
   ];
 
-  const myFoundItems = [
+  const myFoundItems: ReportItem[] = [
     {
       id: "found-1",
-      type: "found" as const,
+      type: "found",
       category: "Keys",
       description: "Set of keys with blue keychain",
       location: "City Library",
@@ -49,7 +93,7 @@ const MyReports = () => {
   ];
 
   const handleSelectItem = (itemId: string, type: "lost" | "found") => {
-    setSelectedItem(itemId);
+    setSelectedItem(selectedItem === itemId ? null : itemId);
     setMatchType(type);
   };
 
@@ -63,28 +107,61 @@ const MyReports = () => {
     navigate(`/match-results?type=${matchType}&itemId=${selectedItem}`);
   };
 
-  const renderItemCard = (item: typeof myLostItems[0] | typeof myFoundItems[0], type: "lost" | "found") => (
-    <Card
-      key={item.id}
-      className={`p-4 cursor-pointer transition-all ${
-        selectedItem === item.id
-          ? "ring-2 ring-primary bg-primary/5"
-          : "hover:shadow-md"
-      }`}
-      onClick={() => handleSelectItem(item.id, type)}
-    >
-      <div className="flex items-start justify-between">
-        <div className="space-y-2 flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold">{item.category}</h3>
-            <Badge variant={type === "lost" ? "destructive" : "default"} className="text-xs">
-              {type === "lost" ? "Lost" : "Found"}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground line-clamp-1">
-            {item.description}
-          </p>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+  const handleFoundMyItem = (itemId: string) => {
+    // In production, this would update the database
+    console.log("Marking item as recovered:", itemId);
+    navigate("/confirm-recovery");
+  };
+
+  const getSelectedItemData = (): ReportItem | undefined => {
+    return [...myLostItems, ...myFoundItems].find(item => item.id === selectedItem);
+  };
+
+  const renderStatusBadge = (status: ReportItem["status"]) => {
+    switch (status) {
+      case "Matched":
+        return <Badge className="bg-green-500/10 text-green-600 border-green-500/20">Matched</Badge>;
+      case "Recovered":
+        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Recovered</Badge>;
+      default:
+        return <Badge variant="secondary">Not Matched Yet</Badge>;
+    }
+  };
+
+  const renderContactRequestBadge = (status: MatchInfo["contactRequestStatus"]) => {
+    switch (status) {
+      case "approved":
+        return (
+          <Badge className="bg-green-500/10 text-green-600 border-green-500/20 flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3" />
+            Contact Approved
+          </Badge>
+        );
+      case "pending":
+        return (
+          <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            Contact Pending
+          </Badge>
+        );
+      case "denied":
+        return (
+          <Badge className="bg-red-500/10 text-red-600 border-red-500/20 flex items-center gap-1">
+            <XCircle className="w-3 h-3" />
+            Contact Denied
+          </Badge>
+        );
+    }
+  };
+
+  const renderItemDetails = (item: ReportItem) => (
+    <Card className="p-4 mt-3 bg-muted/30 border-primary/20 animate-in slide-in-from-top-2 duration-200">
+      <div className="space-y-4">
+        {/* Item Details */}
+        <div>
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Item Details</h4>
+          <p className="text-sm">{item.description}</p>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
             <span className="flex items-center gap-1">
               <MapPin className="w-3 h-3" />
               {item.location}
@@ -95,13 +172,140 @@ const MyReports = () => {
             </span>
           </div>
         </div>
-        {selectedItem === item.id && (
-          <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-primary-foreground" />
+
+        <Separator />
+
+        {/* Match Status */}
+        <div>
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Match Status</h4>
+          <div className="flex items-center gap-2">
+            {renderStatusBadge(item.status)}
           </div>
+        </div>
+
+        {/* Match Info - Only if matched */}
+        {item.matchInfo && (
+          <>
+            <Separator />
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-2">Matched With</h4>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{item.matchInfo.userName}</p>
+                  <p className="text-xs text-muted-foreground">{item.matchInfo.itemDescription}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                {renderContactRequestBadge(item.matchInfo.contactRequestStatus)}
+              </div>
+            </div>
+
+            {/* Contact Info - Only if approved */}
+            {item.matchInfo.contactRequestStatus === "approved" && (
+              <>
+                <Separator />
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Contact Information</h4>
+                  <div className="space-y-2">
+                    {item.matchInfo.contactEmail && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="w-4 h-4 text-muted-foreground" />
+                        <a href={`mailto:${item.matchInfo.contactEmail}`} className="text-primary hover:underline">
+                          {item.matchInfo.contactEmail}
+                        </a>
+                      </div>
+                    )}
+                    {item.matchInfo.contactPhone && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        <a href={`tel:${item.matchInfo.contactPhone}`} className="text-primary hover:underline">
+                          {item.matchInfo.contactPhone}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Found My Item Button - Only for lost items with approved contact */}
+            {item.type === "lost" && item.matchInfo.contactRequestStatus === "approved" && item.status !== "Recovered" && (
+              <>
+                <Separator />
+                <Button 
+                  onClick={() => handleFoundMyItem(item.id)}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                >
+                  <PartyPopper className="w-4 h-4 mr-2" />
+                  I Found My Item!
+                </Button>
+              </>
+            )}
+          </>
+        )}
+
+        {/* AI Match Button for items not matched */}
+        {item.status === "Active" && (
+          <>
+            <Separator />
+            <Button
+              onClick={handleStartMatching}
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Find Matches with AI
+            </Button>
+          </>
         )}
       </div>
     </Card>
+  );
+
+  const renderItemCard = (item: ReportItem, type: "lost" | "found") => (
+    <div key={item.id}>
+      <Card
+        className={`p-4 cursor-pointer transition-all ${
+          selectedItem === item.id
+            ? "ring-2 ring-primary bg-primary/5"
+            : "hover:shadow-md"
+        }`}
+        onClick={() => handleSelectItem(item.id, type)}
+      >
+        <div className="flex items-start justify-between">
+          <div className="space-y-2 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold">{item.category}</h3>
+              <Badge variant={type === "lost" ? "destructive" : "default"} className="text-xs">
+                {type === "lost" ? "Lost" : "Found"}
+              </Badge>
+              {renderStatusBadge(item.status)}
+            </div>
+            <p className="text-sm text-muted-foreground line-clamp-1">
+              {item.description}
+            </p>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {item.location}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {new Date(item.date).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+          {selectedItem === item.id && (
+            <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <div className="w-2 h-2 rounded-full bg-primary-foreground" />
+            </div>
+          )}
+        </div>
+      </Card>
+      {selectedItem === item.id && renderItemDetails(item)}
+    </div>
   );
 
   return (
@@ -117,7 +321,7 @@ const MyReports = () => {
             </Button>
             <div>
               <h1 className="text-xl font-bold">My Reports</h1>
-              <p className="text-sm text-muted-foreground">Select a report to find AI matches</p>
+              <p className="text-sm text-muted-foreground">View details and find AI matches</p>
             </div>
           </div>
         </div>
@@ -131,7 +335,7 @@ const MyReports = () => {
             <div>
               <h3 className="font-medium">AI Matching</h3>
               <p className="text-sm text-muted-foreground">
-                Select one of your reports, then tap "Find Matches" to let AI search for potential matches.
+                Tap a report to view details, match status, and contact info.
               </p>
             </div>
           </div>
@@ -197,20 +401,6 @@ const MyReports = () => {
               </Button>
             </div>
           </Card>
-        )}
-
-        {/* Start Matching Button */}
-        {selectedItem && (
-          <div className="fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent">
-            <Button
-              onClick={handleStartMatching}
-              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-              size="lg"
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              Find Matches with AI
-            </Button>
-          </div>
         )}
       </div>
 
