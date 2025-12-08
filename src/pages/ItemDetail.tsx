@@ -211,17 +211,6 @@ const ItemDetail = () => {
           </div>
         </Card>
 
-        {/* Claim Button - only for Anonymous items */}
-        {item.type === "anonymous" && item.status === "Active" && (
-          <Button 
-            className="w-full" 
-            size="lg"
-            onClick={() => navigate(`/claim/${id}?category=${item.category}`)}
-          >
-            <MessageCircle className="w-5 h-5 mr-2" />
-            Claim This Item
-          </Button>
-        )}
       </div>
 
       <BottomNav />
