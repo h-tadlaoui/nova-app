@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle, Package, Search, Award, Sparkles } from "lucide-react";
+import { ArrowLeft, CheckCircle, Package, Search, Award } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
 const History = () => {
@@ -45,16 +45,6 @@ const History = () => {
       </header>
 
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* AI Match Button */}
-        <Button 
-          onClick={() => navigate("/ai-matching")}
-          className="w-full mb-6 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-          size="lg"
-        >
-          <Sparkles className="w-5 h-5 mr-2" />
-          Find Matches with AI
-        </Button>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           <Card className="p-4 text-center">

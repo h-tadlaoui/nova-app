@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Search, Package, Shield, ArrowLeft } from "lucide-react";
+import { Search, Package, Shield, ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/BottomNav";
 
@@ -22,6 +22,22 @@ const Browse = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8 space-y-4">
+        {/* AI Matching Card */}
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 border-primary/50 bg-gradient-to-r from-primary/5 to-accent/5 hover:border-primary"
+          onClick={() => navigate("/ai-matching")}
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <Sparkles className="w-7 h-7 text-primary-foreground" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold mb-1">AI Matching</h3>
+              <p className="text-sm text-muted-foreground">Find matches for your reports using AI</p>
+            </div>
+          </div>
+        </Card>
+
         <Card 
           className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-secondary"
           onClick={() => navigate("/browse-lost")}
