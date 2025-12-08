@@ -111,7 +111,7 @@ const Notifications = () => {
 
   const getItemPath = (request: ContactRequest) => {
     const idPart = request.itemId.split('-')[1];
-    return `/item/${idPart}?type=${request.origin}`;
+    return `/report/${idPart}?type=${request.origin}`;
   };
 
   const renderRequestCard = (request: ContactRequest) => (
