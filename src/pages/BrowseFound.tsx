@@ -139,6 +139,7 @@ const BrowseFound = () => {
                 </div>
 
                 <Button 
+                  variant="outline"
                   size="sm" 
                   className="w-full"
                   onClick={(e) => {
@@ -146,7 +147,7 @@ const BrowseFound = () => {
                     navigate(`/item/${item.id}?type=found`);
                   }}
                 >
-                  Claim This Item
+                  View Details
                 </Button>
               </div>
             </Card>
