@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Search, Package, Shield, MapPin, Users } from "lucide-react";
+import { Search, Package, Shield } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 const IndexOption3 = () => {
   const navigate = useNavigate();
@@ -61,26 +61,6 @@ const IndexOption3 = () => {
               </div>
               <Button variant="outline" className="w-full border-anonymous mt-3">Report</Button>
             </div>
-          </Card>
-        </div>
-
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3 flex-shrink-0">
-          <Card className="p-3 text-center">
-            <Users className="w-5 h-5 mx-auto mb-1 text-primary" />
-            <p className="text-xl font-bold">0</p>
-            <p className="text-xs text-muted-foreground">Active Users</p>
-          </Card>
-          <Card className="p-3 text-center">
-            <MapPin className="w-5 h-5 mx-auto mb-1 text-accent" />
-            <p className="text-xl font-bold">0</p>
-            <p className="text-xs text-muted-foreground">Locations</p>
-          </Card>
-          <Card className="p-3 text-center">
-            <Package className="w-5 h-5 mx-auto mb-1 text-secondary" />
-            <p className="text-xl font-bold">0</p>
-            <p className="text-xs text-muted-foreground">Reunited</p>
           </Card>
         </div>
       </div>
