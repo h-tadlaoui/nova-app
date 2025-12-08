@@ -5,7 +5,7 @@ import { Search, Package, Shield, MapPin, Users } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 const IndexOption3 = () => {
   const navigate = useNavigate();
-  return <div className="h-screen bg-muted/30 flex flex-col overflow-hidden">
+  return <div className="min-h-screen bg-muted/30 flex flex-col pb-20">
       {/* App Bar */}
       <header className="bg-card border-b border-border flex-shrink-0">
         <div className="container mx-auto px-4 py-3">
@@ -13,7 +13,7 @@ const IndexOption3 = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 flex-1 flex flex-col py-4 gap-3 overflow-hidden">
+      <div className="container mx-auto px-4 flex-1 flex flex-col py-4 gap-3">
         {/* Hero Card */}
         <Card className="p-4 bg-gradient-to-br from-primary/10 to-accent/10 flex-shrink-0 py-[4px]">
           <div className="text-center space-y-1">
