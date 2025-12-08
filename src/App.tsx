@@ -19,7 +19,6 @@ import Browse from "./pages/Browse";
 import History from "./pages/History";
 import ItemDetail from "./pages/ItemDetail";
 import ClaimItem from "./pages/ClaimItem";
-import VerifyClaims from "./pages/VerifyClaims";
 import ContactExchange from "./pages/ContactExchange";
 import ConfirmRecovery from "./pages/ConfirmRecovery";
 import MatchResults from "./pages/MatchResults";
@@ -46,7 +45,7 @@ const App = () => (
           <Route path="/history" element={<History />} />
           <Route path="/item/:id" element={<ItemDetail />} />
           <Route path="/claim/:id" element={<ClaimItem />} />
-          <Route path="/verify/:id" element={<VerifyClaims />} />
+          <Route path="/contact-exchange/:id" element={<ContactExchange />} />
           <Route path="/contact-exchange/:id" element={<ContactExchange />} />
           <Route path="/confirm-recovery/:id" element={<ConfirmRecovery />} />
           <Route path="/match-results" element={<MatchResults />} />

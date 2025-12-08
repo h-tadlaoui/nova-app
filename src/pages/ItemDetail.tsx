@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,8 +9,6 @@ import {
   Palette, 
   MessageCircle,
   Shield,
-  CheckCircle2,
-  Users,
   Image as ImageIcon,
   Mail,
   Phone
@@ -35,7 +32,6 @@ const mockItems: Record<string, {
   image?: string;
   contactEmail?: string;
   contactPhone?: string;
-  claimsCount: number;
 }> = {
   "lost-1": {
     id: "lost-1",
@@ -48,7 +44,6 @@ const mockItems: Record<string, {
     date: "2024-03-15",
     status: "Active",
     contactEmail: "owner@email.com",
-    claimsCount: 0,
   },
   "found-1": {
     id: "found-1",
@@ -64,7 +59,6 @@ const mockItems: Record<string, {
     image: "/placeholder.svg",
     contactEmail: "finder@email.com",
     contactPhone: "+1234567890",
-    claimsCount: 2,
   },
   "anonymous-1": {
     id: "anonymous-1",
@@ -76,7 +70,7 @@ const mockItems: Record<string, {
     time: "14:30",
     status: "Active",
     contactEmail: "finder@email.com",
-    claimsCount: 1,
+    contactPhone: "+1234567890",
   },
 };
 
@@ -85,15 +79,10 @@ const ItemDetail = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "found";
-  
-  const [itemStatus, setItemStatus] = useState<ItemStatus>("Active");
 
   // Get item based on type and id
   const itemKey = `${type}-${id}`;
   const item = mockItems[itemKey] || mockItems["found-1"];
-
-  const isOwner = false; // In real app, check if current user is the owner
-  const isFinder = true; // In real app, check if current user is the finder
 
   const getBackPath = () => {
     switch (item.type) {
@@ -117,13 +106,13 @@ const ItemDetail = () => {
               <h1 className="text-xl font-bold">{item.category}</h1>
               <p className="text-sm text-muted-foreground capitalize">{item.type} Item</p>
             </div>
-            <ItemStatusBadge status={itemStatus} />
+            <ItemStatusBadge status={item.status} />
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-6 max-w-2xl space-y-6">
-        {/* Image Section */}
+        {/* Image Section - only for lost/found items */}
         {item.type !== "anonymous" && (
           <Card className="overflow-hidden">
             {item.image ? (
@@ -140,7 +129,7 @@ const ItemDetail = () => {
           </Card>
         )}
 
-        {/* Anonymous Warning */}
+        {/* Anonymous Info Card */}
         {item.type === "anonymous" && (
           <Card className="p-4 bg-[hsl(var(--anonymous-color))]/10 border-[hsl(var(--anonymous-color))]/30">
             <div className="flex items-start gap-3">
@@ -148,14 +137,14 @@ const ItemDetail = () => {
               <div>
                 <p className="font-medium text-sm">Anonymous Report</p>
                 <p className="text-sm text-muted-foreground">
-                  Item details are hidden. Contact the finder to verify ownership through questions.
+                  Item details are hidden. Contact the finder to verify ownership.
                 </p>
               </div>
             </div>
           </Card>
         )}
 
-        {/* Finder Contact Info for Anonymous Items */}
+        {/* Contact Finder - for Anonymous items */}
         {item.type === "anonymous" && (item.contactEmail || item.contactPhone) && (
           <Card className="p-6 space-y-4">
             <h2 className="font-semibold text-lg">Contact Finder</h2>
@@ -195,7 +184,7 @@ const ItemDetail = () => {
 
         {/* Details Card */}
         <Card className="p-6 space-y-4">
-          {item.type !== "anonymous" && (
+          {item.type !== "anonymous" && item.description && (
             <div>
               <h2 className="font-semibold text-lg mb-2">Description</h2>
               <p className="text-muted-foreground">{item.description}</p>
@@ -239,83 +228,19 @@ const ItemDetail = () => {
               </div>
             </div>
           </div>
-
-          {item.claimsCount > 0 && isFinder && (
-            <div className="flex items-center gap-2 pt-2 border-t">
-              <Users className="w-4 h-4 text-primary" />
-              <span className="text-sm">
-                <strong>{item.claimsCount}</strong> pending claim{item.claimsCount > 1 ? "s" : ""}
-              </span>
-            </div>
-          )}
         </Card>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          {/* For potential owner - Claim button (only for anonymous items) */}
-          {itemStatus === "Active" && !isFinder && item.type === "anonymous" && (
-            <Button 
-              className="w-full" 
-              size="lg"
-              onClick={() => navigate(`/claim/${id}?category=${item.category}`)}
-            >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              Claim This Item
-            </Button>
-          )}
-
-          {/* For finder - Review claims */}
-          {isFinder && item.claimsCount > 0 && itemStatus !== "Recovered" && (
-            <Button 
-              className="w-full" 
-              size="lg"
-              onClick={() => navigate(`/verify/${id}`)}
-            >
-              <Shield className="w-5 h-5 mr-2" />
-              Review Claims ({item.claimsCount})
-            </Button>
-          )}
-
-          {/* For owner when item is on its way */}
-          {itemStatus === "Item on its way" && isOwner && (
-            <Button 
-              className="w-full bg-accent hover:bg-accent/90" 
-              size="lg"
-              onClick={() => navigate(`/confirm-recovery/${id}?category=${item.category}`)}
-            >
-              <CheckCircle2 className="w-5 h-5 mr-2" />
-              Confirm Item Received
-            </Button>
-          )}
-
-          {/* Status info */}
-          {itemStatus === "Verification Pending" && (
-            <Card className="p-4 bg-yellow-500/10 border-yellow-500/30">
-              <p className="text-sm text-center text-muted-foreground">
-                Waiting for finder to verify your claim
-              </p>
-            </Card>
-          )}
-
-          {itemStatus === "Item on its way" && isFinder && (
-            <Card className="p-4 bg-primary/10 border-primary/30">
-              <p className="text-sm text-center text-muted-foreground">
-                Waiting for owner to confirm receipt
-              </p>
-            </Card>
-          )}
-
-          {itemStatus === "Recovered" && (
-            <Card className="p-4 bg-accent/10 border-accent/30">
-              <div className="flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-accent" />
-                <p className="text-sm font-medium text-accent">
-                  Item Successfully Recovered!
-                </p>
-              </div>
-            </Card>
-          )}
-        </div>
+        {/* Claim Button - only for Anonymous items */}
+        {item.type === "anonymous" && item.status === "Active" && (
+          <Button 
+            className="w-full" 
+            size="lg"
+            onClick={() => navigate(`/claim/${id}?category=${item.category}`)}
+          >
+            <MessageCircle className="w-5 h-5 mr-2" />
+            Claim This Item
+          </Button>
+        )}
       </div>
 
       <BottomNav />
