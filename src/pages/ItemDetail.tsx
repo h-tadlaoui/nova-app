@@ -9,9 +9,7 @@ import {
   Palette, 
   MessageCircle,
   Shield,
-  Image as ImageIcon,
-  Mail,
-  Phone
+  Image as ImageIcon
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import ItemStatusBadge from "@/components/ItemStatusBadge";
@@ -144,41 +142,24 @@ const ItemDetail = () => {
           </Card>
         )}
 
-        {/* Contact Finder - for Anonymous items */}
-        {item.type === "anonymous" && (item.contactEmail || item.contactPhone) && (
+        {/* Request Contact Button - for Anonymous items */}
+        {item.type === "anonymous" && (
           <Card className="p-6 space-y-4">
-            <h2 className="font-semibold text-lg">Contact Finder</h2>
-            <div className="space-y-3">
-              {item.contactEmail && (
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <a href={`mailto:${item.contactEmail}`} className="font-medium text-primary hover:underline">
-                      {item.contactEmail}
-                    </a>
-                  </div>
-                </div>
-              )}
-              {item.contactPhone && (
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Phone</p>
-                    <a href={`tel:${item.contactPhone}`} className="font-medium text-primary hover:underline">
-                      {item.contactPhone}
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Reach out to the finder and describe your item to verify ownership.
+            <h2 className="font-semibold text-lg">Request Contact Information</h2>
+            <p className="text-sm text-muted-foreground">
+              If you believe this is your item, request the finder's contact information. 
+              They will review your request and share their contact if approved.
             </p>
+            <Button 
+              className="w-full"
+              onClick={() => {
+                // In real app, this would send a contact request
+                navigate("/notifications");
+              }}
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Request Contact
+            </Button>
           </Card>
         )}
 
