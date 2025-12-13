@@ -1,15 +1,52 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Search, Package, Shield } from "lucide-react";
+import { Search, Package, Shield, LogIn, LogOut, User } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
+
 const IndexOption3 = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({ title: "Logged out", description: "You've been signed out." });
+  };
+
   return <div className="min-h-screen bg-muted/30 flex flex-col pb-20">
       {/* App Bar */}
       <header className="bg-card border-b border-border flex-shrink-0">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="w-10" />
           <h1 className="text-xl font-bold text-center">FindBack</h1>
+          {user ? (
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+            </Button>
+          ) : (
+            <Button variant="ghost" size="icon" onClick={() => navigate("/auth")}>
+              <LogIn className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </header>
 
