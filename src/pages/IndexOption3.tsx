@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Search, Package, Shield, LogIn, LogOut, User } from "lucide-react";
+import { Search, Package, Shield, LogIn, LogOut, User, Moon, Sun } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -12,6 +12,12 @@ const IndexOption3 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return false;
+  });
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -32,11 +38,28 @@ const IndexOption3 = () => {
     toast({ title: "Logged out", description: "You've been signed out." });
   };
 
+  const toggleDarkMode = () => {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    document.documentElement.classList.toggle("dark", newIsDark);
+    localStorage.setItem("theme", newIsDark ? "dark" : "light");
+  };
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    }
+  }, []);
+
   return <div className="min-h-screen bg-muted/30 flex flex-col pb-20">
       {/* App Bar */}
       <header className="bg-card border-b border-border flex-shrink-0">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="w-10" />
+          <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
+            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
           <h1 className="text-xl font-bold text-center">FindBack</h1>
           {user ? (
             <div className="flex items-center gap-1">
