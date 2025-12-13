@@ -124,7 +124,7 @@ const IndexOption3 = () => {
                 <h3 className="text-lg font-bold mb-1">Anonymous</h3>
                 <p className="text-xs text-muted-foreground">Protect valuable item details</p>
               </div>
-              <Button variant="outline" className="w-full border-anonymous mt-3">Report</Button>
+              <Button variant="outline" className="w-full border-anonymous text-anonymous hover:bg-anonymous hover:text-white mt-3">Report</Button>
             </div>
           </Card>
         </div>
