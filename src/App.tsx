@@ -27,6 +27,7 @@ import ReportDetail from "./pages/ReportDetail";
 import Notifications from "./pages/Notifications";
 import RequestContact from "./pages/RequestContact";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<IndexOption3 />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/report-lost" element={<ReportLost />} />
           <Route path="/report-found" element={<ReportFound />} />
           <Route path="/report-anonymous" element={<ReportAnonymous />} />

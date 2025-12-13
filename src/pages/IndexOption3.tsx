@@ -39,9 +39,14 @@ const IndexOption3 = () => {
           <div className="w-10" />
           <h1 className="text-xl font-bold text-center">FindBack</h1>
           {user ? (
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/profile")}>
+                <User className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
           ) : (
             <Button variant="ghost" size="icon" onClick={() => navigate("/auth")}>
               <LogIn className="h-5 w-5" />
