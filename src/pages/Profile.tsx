@@ -61,7 +61,7 @@ const Profile = () => {
 
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: fullName, phone })
+      .update({ phone })
       .eq("user_id", session.user.id);
 
     if (error) {
@@ -124,12 +124,12 @@ const Profile = () => {
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="johndoe"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="pl-10"
+                  disabled
+                  className="pl-10 bg-muted"
                 />
               </div>
+              <p className="text-xs text-muted-foreground">Username cannot be changed</p>
             </div>
 
             <div className="space-y-2">
