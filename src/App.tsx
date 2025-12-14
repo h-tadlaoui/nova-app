@@ -29,6 +29,7 @@ import RequestContact from "./pages/RequestContact";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -39,27 +40,26 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<IndexOption3 />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/report-lost" element={<ReportLost />} />
-          <Route path="/report-found" element={<ReportFound />} />
-          <Route path="/report-anonymous" element={<ReportAnonymous />} />
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/browse-lost" element={<BrowseLost />} />
-          <Route path="/browse-found" element={<BrowseFound />} />
-          <Route path="/browse-anonymous" element={<BrowseAnonymous />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/item/:id" element={<ItemDetail />} />
-          <Route path="/claim/:id" element={<ClaimItem />} />
-          <Route path="/contact-exchange/:id" element={<ContactExchange />} />
-          <Route path="/contact-exchange/:id" element={<ContactExchange />} />
-          <Route path="/confirm-recovery/:id" element={<ConfirmRecovery />} />
-          <Route path="/match-results" element={<MatchResults />} />
-          <Route path="/my-reports" element={<MyReports />} />
-          <Route path="/my-reports/:id" element={<ReportDetail />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/request-contact/:id" element={<RequestContact />} />
+          <Route path="/" element={<ProtectedRoute><IndexOption3 /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/report-lost" element={<ProtectedRoute><ReportLost /></ProtectedRoute>} />
+          <Route path="/report-found" element={<ProtectedRoute><ReportFound /></ProtectedRoute>} />
+          <Route path="/report-anonymous" element={<ProtectedRoute><ReportAnonymous /></ProtectedRoute>} />
+          <Route path="/browse" element={<ProtectedRoute><Browse /></ProtectedRoute>} />
+          <Route path="/browse-lost" element={<ProtectedRoute><BrowseLost /></ProtectedRoute>} />
+          <Route path="/browse-found" element={<ProtectedRoute><BrowseFound /></ProtectedRoute>} />
+          <Route path="/browse-anonymous" element={<ProtectedRoute><BrowseAnonymous /></ProtectedRoute>} />
+          <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+          <Route path="/item/:id" element={<ProtectedRoute><ItemDetail /></ProtectedRoute>} />
+          <Route path="/claim/:id" element={<ProtectedRoute><ClaimItem /></ProtectedRoute>} />
+          <Route path="/contact-exchange/:id" element={<ProtectedRoute><ContactExchange /></ProtectedRoute>} />
+          <Route path="/confirm-recovery/:id" element={<ProtectedRoute><ConfirmRecovery /></ProtectedRoute>} />
+          <Route path="/match-results" element={<ProtectedRoute><MatchResults /></ProtectedRoute>} />
+          <Route path="/my-reports" element={<ProtectedRoute><MyReports /></ProtectedRoute>} />
+          <Route path="/my-reports/:id" element={<ProtectedRoute><ReportDetail /></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          <Route path="/request-contact/:id" element={<ProtectedRoute><RequestContact /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
