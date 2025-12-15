@@ -14,6 +14,164 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_requests: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          requester_email: string
+          requester_id: string
+          requester_message: string | null
+          requester_phone: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          requester_email: string
+          requester_id: string
+          requester_message?: string | null
+          requester_phone?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          requester_email?: string
+          requester_id?: string
+          requester_message?: string | null
+          requester_phone?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_requests_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          brand: string | null
+          category: string
+          color: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          image_url: string | null
+          location: string
+          status: Database["public"]["Enums"]["item_status"]
+          time: string | null
+          type: Database["public"]["Enums"]["item_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          category: string
+          color?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location: string
+          status?: Database["public"]["Enums"]["item_status"]
+          time?: string | null
+          type: Database["public"]["Enums"]["item_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          category?: string
+          color?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          status?: Database["public"]["Enums"]["item_status"]
+          time?: string | null
+          type?: Database["public"]["Enums"]["item_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          created_at: string
+          found_item_id: string
+          id: string
+          lost_item_id: string
+          match_score: number
+          status: Database["public"]["Enums"]["match_status"]
+        }
+        Insert: {
+          created_at?: string
+          found_item_id: string
+          id?: string
+          lost_item_id: string
+          match_score: number
+          status?: Database["public"]["Enums"]["match_status"]
+        }
+        Update: {
+          created_at?: string
+          found_item_id?: string
+          id?: string
+          lost_item_id?: string
+          match_score?: number
+          status?: Database["public"]["Enums"]["match_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_found_item_id_fkey"
+            columns: ["found_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_lost_item_id_fkey"
+            columns: ["lost_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -49,7 +207,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      item_status: "active" | "matched" | "recovered" | "closed"
+      item_type: "lost" | "found" | "anonymous"
+      match_status: "pending" | "confirmed" | "rejected"
+      request_status: "pending" | "approved" | "denied"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -176,6 +337,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      item_status: ["active", "matched", "recovered", "closed"],
+      item_type: ["lost", "found", "anonymous"],
+      match_status: ["pending", "confirmed", "rejected"],
+      request_status: ["pending", "approved", "denied"],
+    },
   },
 } as const

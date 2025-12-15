@@ -5,13 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, MapPin, Shield, AlertCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Shield, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import BottomNav from "@/components/BottomNav";
+import { createItem } from "@/hooks/useItems";
 
 const ReportAnonymous = () => {
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     category: "",
     location: "",
@@ -21,21 +23,45 @@ const ReportAnonymous = () => {
     contactPhone: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.location || !formData.dateTime) {
-      toast.error("Please provide location and time information");
+    if (!formData.location || !formData.dateTime || !formData.contactEmail) {
+      toast.error("Please provide location, time, and email");
       return;
     }
 
-    toast.success("Anonymous report submitted!", {
-      description: "Potential owners can now contact you to verify ownership"
-    });
+    setIsSubmitting(true);
 
-    setTimeout(() => {
-      navigate("/browse-anonymous");
-    }, 2000);
+    try {
+      const dateTimeParts = formData.dateTime.split("T");
+      const date = dateTimeParts[0];
+      const time = dateTimeParts[1] || null;
+
+      await createItem({
+        type: "anonymous",
+        category: formData.category || "Unknown",
+        description: formData.additionalInfo || undefined,
+        location: formData.location,
+        date,
+        time: time || undefined,
+        contact_email: formData.contactEmail,
+        contact_phone: formData.contactPhone || undefined,
+      });
+
+      toast.success("Anonymous report submitted!", {
+        description: "Potential owners can now contact you to verify ownership"
+      });
+
+      setTimeout(() => {
+        navigate("/browse-anonymous");
+      }, 1500);
+    } catch (error) {
+      console.error("Error creating anonymous report:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit report");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -173,8 +199,20 @@ const ReportAnonymous = () => {
 
             {/* Submit Button */}
             <div className="space-y-3 pt-4">
-              <Button type="submit" className="w-full bg-anonymous hover:bg-anonymous/90" size="lg">
-                Submit Anonymous Report
+              <Button 
+                type="submit" 
+                className="w-full bg-anonymous hover:bg-anonymous/90" 
+                size="lg"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Anonymous Report"
+                )}
               </Button>
               <p className="text-xs text-center text-muted-foreground">
                 Report will be visible in the Anonymous Found Items section
