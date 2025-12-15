@@ -4,101 +4,33 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Sparkles, MapPin, Clock, Search, Package, ChevronRight, HelpCircle } from "lucide-react";
+import { ArrowLeft, Sparkles, MapPin, Clock, Search, Package, ChevronRight, HelpCircle, Loader2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-
-interface ReportItem {
-  id: string;
-  type: "lost" | "found" | "anonymous";
-  category: string;
-  description: string;
-  location: string;
-  date: string;
-  status: "Active" | "Matched" | "Recovered" | "Claimed";
-}
+import { useMyItems, Item } from "@/hooks/useItems";
 
 const MyReports = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("lost");
+  const { items, loading } = useMyItems();
 
-  // Mock user's reports
-  const myLostItems: ReportItem[] = [
-    {
-      id: "lost-1",
-      type: "lost",
-      category: "Phone",
-      description: "Black iPhone 13, cracked screen protector",
-      location: "Central Park",
-      date: "2024-03-15",
-      status: "Matched",
-    },
-    {
-      id: "lost-2",
-      type: "lost",
-      category: "Wallet",
-      description: "Brown leather wallet with cards",
-      location: "Downtown Coffee Shop",
-      date: "2024-03-14",
-      status: "Matched",
-    },
-    {
-      id: "lost-3",
-      type: "lost",
-      category: "Headphones",
-      description: "AirPods Pro in white case",
-      location: "Gym on 5th Ave",
-      date: "2024-03-12",
-      status: "Active",
-    },
-  ];
+  const myLostItems = items.filter((item) => item.type === "lost");
+  const myFoundItems = items.filter((item) => item.type === "found");
+  const myAnonymousItems = items.filter((item) => item.type === "anonymous");
 
-  const myFoundItems: ReportItem[] = [
-    {
-      id: "found-1",
-      type: "found",
-      category: "Keys",
-      description: "Set of keys with blue keychain",
-      location: "City Library",
-      date: "2024-03-16",
-      status: "Active",
-    },
-  ];
-
-  const myAnonymousItems: ReportItem[] = [
-    {
-      id: "anon-1",
-      type: "anonymous",
-      category: "Umbrella",
-      description: "Black umbrella with wooden handle",
-      location: "Bus Stop on Main St",
-      date: "2024-03-17",
-      status: "Active",
-    },
-    {
-      id: "anon-2",
-      type: "anonymous",
-      category: "Bag",
-      description: "Blue backpack with laptop inside",
-      location: "Train Station",
-      date: "2024-03-13",
-      status: "Claimed",
-    },
-  ];
-
-  const renderStatusBadge = (status: ReportItem["status"]) => {
+  const renderStatusBadge = (status: Item["status"]) => {
     switch (status) {
-      case "Matched":
+      case "matched":
         return <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">Matched</Badge>;
-      case "Recovered":
+      case "recovered":
         return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-xs">Recovered</Badge>;
-      case "Claimed":
-        return <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20 text-xs">Claimed</Badge>;
+      case "closed":
+        return <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20 text-xs">Closed</Badge>;
       default:
-        return <Badge variant="secondary" className="text-xs">Not Matched</Badge>;
+        return <Badge variant="secondary" className="text-xs">Active</Badge>;
     }
   };
 
-  const renderItemCard = (item: ReportItem) => (
+  const renderItemCard = (item: Item) => (
     <Card
       key={item.id}
       className="p-4 cursor-pointer transition-all hover:shadow-md active:scale-[0.99]"
@@ -117,7 +49,7 @@ const MyReports = () => {
             {renderStatusBadge(item.status)}
           </div>
           <p className="text-sm text-muted-foreground line-clamp-1">
-            {item.description}
+            {item.description || "No description"}
           </p>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
@@ -134,6 +66,14 @@ const MyReports = () => {
       </div>
     </Card>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
@@ -167,7 +107,7 @@ const MyReports = () => {
         </Card>
 
         {/* Tabs for Lost/Found/Anonymous */}
-        {(myLostItems.length > 0 || myFoundItems.length > 0 || myAnonymousItems.length > 0) ? (
+        {items.length > 0 ? (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="lost" className="flex items-center gap-1 text-xs sm:text-sm">

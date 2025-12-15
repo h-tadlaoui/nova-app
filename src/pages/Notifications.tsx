@@ -4,75 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, MessageSquare, Mail, Phone, MapPin, Clock, CheckCircle2, ChevronRight, HelpCircle, Search, Eye, Package } from "lucide-react";
+import { ArrowLeft, MessageSquare, Mail, Phone, MapPin, Clock, CheckCircle2, ChevronRight, HelpCircle, Search, Eye, Package, Loader2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-
-type ReportOrigin = "lost" | "found" | "anonymous";
-
-interface ContactRequest {
-  id: string;
-  itemId: string;
-  itemCategory: string;
-  itemLocation: string;
-  requestDate: string;
-  finderEmail?: string;
-  finderPhone?: string;
-  status: "approved" | "pending" | "denied";
-  origin: ReportOrigin;
-}
-
-// Mock contact requests - in real app this would come from database
-const mockContactRequests: ContactRequest[] = [
-  {
-    id: "1",
-    itemId: "anon-1",
-    itemCategory: "Electronic Device",
-    itemLocation: "Near university library entrance",
-    requestDate: "2024-03-16",
-    finderEmail: "finder@email.com",
-    finderPhone: "+1234567890",
-    status: "approved",
-    origin: "anonymous",
-  },
-  {
-    id: "2",
-    itemId: "lost-2",
-    itemCategory: "Wallet",
-    itemLocation: "Bus station platform 3",
-    requestDate: "2024-03-15",
-    status: "pending",
-    origin: "lost",
-  },
-  {
-    id: "3",
-    itemId: "found-3",
-    itemCategory: "Bag",
-    itemLocation: "Train Station",
-    requestDate: "2024-03-14",
-    status: "denied",
-    origin: "found",
-  },
-  {
-    id: "4",
-    itemId: "lost-4",
-    itemCategory: "Keys",
-    itemLocation: "Coffee Shop",
-    requestDate: "2024-03-13",
-    finderEmail: "helper@email.com",
-    status: "approved",
-    origin: "lost",
-  },
-];
+import { useMyContactRequests, ContactRequest as ContactRequestType } from "@/hooks/useContactRequests";
 
 const Notifications = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("approved");
+  const { requests, loading } = useMyContactRequests();
 
-  const approvedRequests = mockContactRequests.filter(r => r.status === "approved");
-  const pendingRequests = mockContactRequests.filter(r => r.status === "pending");
-  const deniedRequests = mockContactRequests.filter(r => r.status === "denied");
+  const approvedRequests = requests.filter(r => r.status === "approved");
+  const pendingRequests = requests.filter(r => r.status === "pending");
+  const deniedRequests = requests.filter(r => r.status === "denied");
 
-  const renderStatusBadge = (status: ContactRequest["status"]) => {
+  const renderStatusBadge = (status: ContactRequestType["status"]) => {
     switch (status) {
       case "approved":
         return <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">Approved</Badge>;
@@ -83,8 +28,8 @@ const Notifications = () => {
     }
   };
 
-  const renderOriginBadge = (origin: ReportOrigin) => {
-    switch (origin) {
+  const renderOriginBadge = (type: string) => {
+    switch (type) {
       case "lost":
         return (
           <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-xs flex items-center gap-1">
@@ -106,64 +51,61 @@ const Notifications = () => {
             Anonymous
           </Badge>
         );
+      default:
+        return null;
     }
   };
 
-  const getItemPath = (request: ContactRequest) => {
-    const idPart = request.itemId.split('-')[1];
-    return `/report/${idPart}?type=${request.origin}`;
-  };
-
-  const renderRequestCard = (request: ContactRequest) => (
+  const renderRequestCard = (request: ContactRequestType) => (
     <Card key={request.id} className="p-4 space-y-3">
       <div 
         className="flex items-center justify-between cursor-pointer"
-        onClick={() => navigate(getItemPath(request))}
+        onClick={() => navigate(`/item/${request.item_id}`)}
       >
         <div className="space-y-1 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold">{request.itemCategory}</h3>
-            {renderOriginBadge(request.origin)}
+            <h3 className="font-semibold">{request.item?.category || "Item"}</h3>
+            {request.item?.type && renderOriginBadge(request.item.type)}
             {renderStatusBadge(request.status)}
           </div>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="w-3 h-3" />
-            {request.itemLocation}
+            {request.item?.location || "Unknown location"}
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="w-3 h-3" />
-            Requested: {new Date(request.requestDate).toLocaleDateString()}
+            Requested: {new Date(request.created_at).toLocaleDateString()}
           </div>
         </div>
         <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
       </div>
       
       {/* Contact Info - Only if approved */}
-      {request.status === "approved" && (
+      {request.status === "approved" && request.item && (
         <div className="border-t border-border pt-3 space-y-2">
           <p className="text-sm font-medium flex items-center gap-1">
             <CheckCircle2 className="w-4 h-4 text-green-600" />
             Finder Contact
           </p>
           <div className="flex flex-col gap-2">
-            {request.finderEmail && (
+            {request.item.contact_email && (
               <a 
-                href={`mailto:${request.finderEmail}`}
+                href={`mailto:${request.item.contact_email}`}
                 className="flex items-center gap-2 text-sm text-primary hover:underline p-2 bg-muted/50 rounded-lg"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Mail className="w-4 h-4" />
-                {request.finderEmail}
+                {request.item.contact_email}
               </a>
             )}
-            {request.finderPhone && (
+            {request.item.contact_phone && (
               <a 
-                href={`tel:${request.finderPhone}`}
+                href={`tel:${request.item.contact_phone}`}
                 className="flex items-center gap-2 text-sm text-primary hover:underline p-2 bg-muted/50 rounded-lg"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Phone className="w-4 h-4" />
-                {request.finderPhone}
+                {request.item.contact_phone}
               </a>
             )}
           </div>
@@ -183,6 +125,14 @@ const Notifications = () => {
       )}
     </Card>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-24 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-24">
@@ -214,7 +164,7 @@ const Notifications = () => {
         </Card>
 
         {/* Tabs for Approved/Pending/Denied */}
-        {mockContactRequests.length > 0 ? (
+        {requests.length > 0 ? (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="approved" className="flex items-center gap-1 text-xs sm:text-sm">

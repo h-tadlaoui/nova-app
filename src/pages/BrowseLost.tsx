@@ -4,32 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, MapPin, Clock, Filter } from "lucide-react";
+import { ArrowLeft, Search, MapPin, Clock, Filter, Loader2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { useItems } from "@/hooks/useItems";
 
 const BrowseLost = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const { items, loading } = useItems("lost", undefined, "active");
 
-  // Only show active lost items
-  const lostItems = [
-    {
-      id: 1,
-      category: "Phone",
-      description: "Black iPhone 13, cracked screen protector",
-      location: "Central Park",
-      date: "2024-03-15",
-      status: "Active",
-    },
-    {
-      id: 2,
-      category: "Wallet",
-      description: "Brown leather wallet with cards",
-      location: "Downtown Coffee Shop",
-      date: "2024-03-14",
-      status: "Active",
-    },
-  ];
+  const filteredItems = items.filter((item) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      item.category.toLowerCase().includes(query) ||
+      (item.description?.toLowerCase().includes(query)) ||
+      (item.brand?.toLowerCase().includes(query)) ||
+      (item.color?.toLowerCase().includes(query)) ||
+      item.location.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
@@ -72,67 +66,82 @@ const BrowseLost = () => {
           </div>
         </div>
 
-        {/* Results Count */}
-        <p className="text-sm text-muted-foreground mb-4">
-          {lostItems.length} active lost item reports
-        </p>
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {/* Results Count */}
+            <p className="text-sm text-muted-foreground mb-4">
+              {filteredItems.length} active lost item reports
+            </p>
 
-        {/* Items Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {lostItems.map((item) => (
-            <Card 
-              key={item.id} 
-              className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => navigate(`/item/${item.id}?type=lost`)}
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-lg">{item.category}</h3>
-                    <Badge variant="secondary" className="mt-1">
-                      {item.status}
-                    </Badge>
-                  </div>
-                </div>
-
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {item.description}
-                </p>
-
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>{item.location}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{new Date(item.date).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/item/${item.id}?type=lost`);
-                  }}
+            {/* Items Grid */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredItems.map((item) => (
+                <Card 
+                  key={item.id} 
+                  className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => navigate(`/item/${item.id}?type=lost`)}
                 >
-                  View Details
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
+                  <div className="space-y-3">
+                    {item.image_url && (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.category}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                    )}
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-lg">{item.category}</h3>
+                        <Badge variant="secondary" className="mt-1">
+                          Active
+                        </Badge>
+                      </div>
+                    </div>
 
-        {/* Empty State */}
-        {lostItems.length === 0 && (
-          <Card className="p-12 text-center">
-            <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No items found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filters</p>
-          </Card>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {item.description || "No description provided"}
+                    </p>
+
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        <span>{item.location}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        <span>{new Date(item.date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/item/${item.id}?type=lost`);
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {filteredItems.length === 0 && (
+              <Card className="p-12 text-center">
+                <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No items found</h3>
+                <p className="text-muted-foreground">Try adjusting your search or filters</p>
+              </Card>
+            )}
+          </>
         )}
       </div>
       

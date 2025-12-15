@@ -3,32 +3,29 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle, Package, Search, Award } from "lucide-react";
+import { ArrowLeft, CheckCircle, Package, Search, Award, Loader2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { useMyItems } from "@/hooks/useItems";
 
 const History = () => {
   const navigate = useNavigate();
+  const { items, loading } = useMyItems();
 
-  // Mock data
-  const recoveredItems = [
-    {
-      id: 1,
-      type: "lost",
-      category: "Phone",
-      description: "iPhone recovered!",
-      date: "2024-03-10",
-    },
-  ];
+  // Filter items by status
+  const recoveredItems = items.filter(
+    (item) => item.type === "lost" && item.status === "recovered"
+  );
+  const contributions = items.filter(
+    (item) => (item.type === "found" || item.type === "anonymous") && item.status === "recovered"
+  );
 
-  const contributions = [
-    {
-      id: 1,
-      type: "found",
-      category: "Wallet",
-      description: "Helped someone find their wallet",
-      date: "2024-03-12",
-    },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
@@ -59,7 +56,7 @@ const History = () => {
           </Card>
           <Card className="p-4 text-center">
             <Award className="w-6 h-6 text-secondary mx-auto mb-2" />
-            <p className="text-2xl font-bold text-secondary">0</p>
+            <p className="text-2xl font-bold text-secondary">{contributions.length > 0 ? contributions.length : 0}</p>
             <p className="text-xs text-muted-foreground">Badges Earned</p>
           </Card>
         </div>
@@ -77,14 +74,22 @@ const History = () => {
                 <Card key={item.id} className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                        <Search className="w-5 h-5 text-secondary" />
-                      </div>
+                      {item.image_url ? (
+                        <img 
+                          src={item.image_url} 
+                          alt={item.category}
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                          <Search className="w-5 h-5 text-secondary" />
+                        </div>
+                      )}
                       <div>
                         <h3 className="font-semibold">{item.category}</h3>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        <p className="text-sm text-muted-foreground">{item.description || "No description"}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Recovered on {new Date(item.date).toLocaleDateString()}
+                          Recovered on {new Date(item.updated_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -111,14 +116,22 @@ const History = () => {
                 <Card key={item.id} className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Package className="w-5 h-5 text-primary" />
-                      </div>
+                      {item.image_url ? (
+                        <img 
+                          src={item.image_url} 
+                          alt={item.category}
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Package className="w-5 h-5 text-primary" />
+                        </div>
+                      )}
                       <div>
                         <h3 className="font-semibold">{item.category}</h3>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        <p className="text-sm text-muted-foreground">{item.description || "Helped someone find their item"}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Completed on {new Date(item.date).toLocaleDateString()}
+                          Completed on {new Date(item.updated_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>

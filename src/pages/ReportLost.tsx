@@ -5,15 +5,18 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Camera, MapPin, Upload } from "lucide-react";
+import { ArrowLeft, Camera, MapPin, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
 import AIProcessing from "@/components/AIProcessing";
-import { useAIMatching } from "@/hooks/useAIMatching";
+import { createItem } from "@/hooks/useItems";
+import { triggerAIMatching } from "@/hooks/useMatches";
 
 const ReportLost = () => {
   const navigate = useNavigate();
-  const { isProcessing, startMatching, handleProcessingComplete } = useAIMatching();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdItemId, setCreatedItemId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     image: null as File | null,
     description: "",
@@ -31,16 +34,52 @@ const ReportLost = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.description || !formData.category) {
+    if (!formData.description || !formData.category || !formData.location) {
       toast.error("Please fill in required fields");
       return;
     }
 
-    toast.success("Lost item report submitted!");
-    startMatching("lost");
+    setIsSubmitting(true);
+
+    try {
+      const item = await createItem({
+        type: "lost",
+        category: formData.category,
+        description: formData.description,
+        brand: formData.brand || undefined,
+        color: formData.color || undefined,
+        location: formData.location,
+        date: new Date().toISOString().split("T")[0],
+        contact_email: formData.contactEmail || undefined,
+        contact_phone: formData.contactPhone || undefined,
+        image: formData.image || undefined,
+      });
+
+      toast.success("Lost item report submitted!");
+      setCreatedItemId(item.id);
+      setIsProcessing(true);
+    } catch (error) {
+      console.error("Error creating item:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit report");
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleProcessingComplete = async () => {
+    if (createdItemId) {
+      try {
+        await triggerAIMatching(createdItemId, "lost");
+        toast.success("AI matching complete!");
+      } catch (error) {
+        console.error("AI matching error:", error);
+        toast.info("Report saved. AI matching will run in background.");
+      }
+    }
+    setIsProcessing(false);
+    navigate("/match-results?type=lost");
   };
 
   return (
@@ -146,7 +185,7 @@ const ReportLost = () => {
 
             {/* Location */}
             <div className="space-y-2">
-              <Label htmlFor="location">Location Where Lost</Label>
+              <Label htmlFor="location">Location Where Lost *</Label>
               <div className="flex gap-2">
                 <Input
                   id="location"
@@ -154,6 +193,7 @@ const ReportLost = () => {
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   className="flex-1"
+                  required
                 />
                 <Button type="button" variant="outline" size="icon">
                   <MapPin className="w-4 h-4" />
@@ -193,8 +233,15 @@ const ReportLost = () => {
 
             {/* Submit Button */}
             <div className="space-y-3 pt-4">
-              <Button type="submit" className="w-full" size="lg">
-                Submit Lost Item Report
+              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Lost Item Report"
+                )}
               </Button>
               <p className="text-xs text-center text-muted-foreground">
                 Our AI will automatically search for matches and notify you
