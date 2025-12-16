@@ -15,6 +15,8 @@ WORKDIR /app
 # Note: All dependencies are installed via pip, no apt packages required
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better layer caching
