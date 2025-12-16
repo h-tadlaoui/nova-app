@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/integrations/django/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -14,35 +14,31 @@ const Profile = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
-        navigate("/auth");
-        return;
-      }
+      try {
+        const response = await apiClient("/auth/me/");
 
-      setEmail(session.user.email || "");
+        if (!response.ok) {
+          navigate("/auth");
+          return;
+        }
 
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("full_name, phone")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
+        const data = await response.json();
+        setEmail(data.email || "");
+        setUsername(data.username || "");
+        setPhone(data.phone || "");
 
-      if (error) {
+      } catch (error) {
         console.error("Error fetching profile:", error);
-      } else if (profile) {
-        setFullName(profile.full_name || "");
-        setPhone(profile.phone || "");
+        navigate("/auth");
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchProfile();
@@ -50,27 +46,23 @@ const Profile = () => {
 
   const handleSave = async () => {
     setSaving(true);
+    try {
+      const response = await apiClient("/auth/me/", {
+        method: "PATCH",
+        body: JSON.stringify({ phone }),
+      });
 
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session?.user) {
-      toast({ title: "Error", description: "Not authenticated", variant: "destructive" });
-      setSaving(false);
-      return;
-    }
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({ phone })
-      .eq("user_id", session.user.id);
-
-    if (error) {
-      toast({ title: "Error", description: "Failed to update profile", variant: "destructive" });
-    } else {
       toast({ title: "Success", description: "Profile updated successfully" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update profile", variant: "destructive" });
+      console.error(error);
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
   };
 
   if (loading) {
@@ -118,13 +110,13 @@ const Profile = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="fullName">Username</Label>
+              <Label htmlFor="username">Username</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="fullName"
+                  id="username"
                   type="text"
-                  value={fullName}
+                  value={username}
                   disabled
                   className="pl-10 bg-muted"
                 />

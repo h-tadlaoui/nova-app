@@ -1,27 +1,9 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/integrations/django/client";
+import { toast } from "sonner";
+import type { ContactRequest } from "@/types/item";
 
 export type RequestStatus = "pending" | "approved" | "denied";
-
-export interface ContactRequest {
-  id: string;
-  item_id: string;
-  requester_id: string;
-  status: RequestStatus;
-  requester_message: string | null;
-  requester_email: string;
-  requester_phone: string | null;
-  created_at: string;
-  updated_at: string;
-  item?: {
-    id: string;
-    category: string;
-    location: string;
-    type: string;
-    contact_email: string | null;
-    contact_phone: string | null;
-  };
-}
 
 export const useMyContactRequests = () => {
   const [requests, setRequests] = useState<ContactRequest[]>([]);
@@ -32,27 +14,12 @@ export const useMyContactRequests = () => {
     const fetchRequests = async () => {
       setLoading(true);
       try {
-        const { data: session } = await supabase.auth.getSession();
-        if (!session?.session?.user) {
-          setRequests([]);
-          setLoading(false);
-          return;
-        }
+        const response = await apiClient("/contact-requests/");
+        if (!response.ok) throw new Error("Failed to fetch requests");
 
-        const { data, error: fetchError } = await supabase
-          .from("contact_requests")
-          .select(`
-            *,
-            item:items(id, category, location, type, contact_email, contact_phone)
-          `)
-          .eq("requester_id", session.session.user.id)
-          .order("created_at", { ascending: false });
-
-        if (fetchError) {
-          throw fetchError;
-        }
-
-        setRequests(data as ContactRequest[]);
+        const data = await response.json();
+        // Handle paginated response
+        setRequests(Array.isArray(data) ? data : data.results || []);
       } catch (err) {
         console.error("Error fetching contact requests:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch requests");
@@ -68,93 +35,32 @@ export const useMyContactRequests = () => {
 };
 
 export const useRequestsForMyItems = () => {
-  const [requests, setRequests] = useState<ContactRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchRequests = async () => {
-      setLoading(true);
-      try {
-        const { data: session } = await supabase.auth.getSession();
-        if (!session?.session?.user) {
-          setRequests([]);
-          setLoading(false);
-          return;
-        }
-
-        // First get user's items
-        const { data: myItems } = await supabase
-          .from("items")
-          .select("id")
-          .eq("user_id", session.session.user.id);
-
-        if (!myItems || myItems.length === 0) {
-          setRequests([]);
-          setLoading(false);
-          return;
-        }
-
-        const itemIds = myItems.map((item) => item.id);
-
-        const { data, error: fetchError } = await supabase
-          .from("contact_requests")
-          .select(`
-            *,
-            item:items(id, category, location, type, contact_email, contact_phone)
-          `)
-          .in("item_id", itemIds)
-          .order("created_at", { ascending: false });
-
-        if (fetchError) {
-          throw fetchError;
-        }
-
-        setRequests(data as ContactRequest[]);
-      } catch (err) {
-        console.error("Error fetching requests for my items:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch requests");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRequests();
-  }, []);
-
-  return { requests, loading, error };
+  return useMyContactRequests();
 };
 
 export const createContactRequest = async (
-  itemId: string,
+  itemId: number,
   message: string,
   email: string,
   phone?: string
 ) => {
   try {
-    const { data: session } = await supabase.auth.getSession();
-    if (!session?.session?.user) {
-      throw new Error("You must be logged in to request contact");
-    }
-
-    const { data, error } = await supabase
-      .from("contact_requests")
-      .insert({
-        item_id: itemId,
-        requester_id: session.session.user.id,
+    const response = await apiClient("/contact-requests/", {
+      method: "POST",
+      body: JSON.stringify({
+        item: itemId,
         requester_message: message,
         requester_email: email,
-        requester_phone: phone || null,
-        status: "pending",
-      })
-      .select()
-      .single();
+        requester_phone: phone,
+      }),
+    });
 
-    if (error) {
-      throw error;
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(JSON.stringify(err) || "Failed to create request");
     }
 
-    return data;
+    return await response.json();
   } catch (err) {
     console.error("Error creating contact request:", err);
     throw err;
@@ -162,18 +68,18 @@ export const createContactRequest = async (
 };
 
 export const updateContactRequestStatus = async (
-  requestId: string,
+  requestId: number,
   status: RequestStatus
 ) => {
   try {
-    const { error } = await supabase
-      .from("contact_requests")
-      .update({ status })
-      .eq("id", requestId);
+    const response = await apiClient(`/contact-requests/${requestId}/update_status/`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
 
-    if (error) {
-      throw error;
-    }
+    if (!response.ok) throw new Error("Failed to update status");
+
+    return await response.json();
   } catch (err) {
     console.error("Error updating contact request status:", err);
     throw err;

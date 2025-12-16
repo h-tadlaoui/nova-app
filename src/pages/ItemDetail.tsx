@@ -1,88 +1,49 @@
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Clock, 
-  Tag, 
-  Palette, 
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  Tag,
+  Palette,
   MessageCircle,
   Shield,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Loader2
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import ItemStatusBadge from "@/components/ItemStatusBadge";
-import type { ItemStatus } from "@/types/item";
-
-// Mock item data - in real app this would come from database
-const mockItems: Record<string, {
-  id: string;
-  type: "lost" | "found" | "anonymous";
-  category: string;
-  description: string;
-  brand?: string;
-  color?: string;
-  location: string;
-  date: string;
-  time?: string;
-  status: ItemStatus;
-  image?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-}> = {
-  "lost-1": {
-    id: "lost-1",
-    type: "lost",
-    category: "Phone",
-    description: "Black iPhone 13 with cracked screen protector. Has a blue silicone case with a small sticker on the back.",
-    brand: "Apple",
-    color: "Black",
-    location: "Central Park, near the fountain",
-    date: "2024-03-15",
-    status: "Active",
-    contactEmail: "owner@email.com",
-  },
-  "found-1": {
-    id: "found-1",
-    type: "found",
-    category: "Keys",
-    description: "Set of 3 keys with a blue keychain shaped like a dolphin. One key looks like a car key.",
-    brand: "Unknown",
-    color: "Silver with blue keychain",
-    location: "City Library, reading room",
-    date: "2024-03-16",
-    time: "14:30",
-    status: "Active",
-    image: "/placeholder.svg",
-    contactEmail: "finder@email.com",
-    contactPhone: "+1234567890",
-  },
-  "anonymous-1": {
-    id: "anonymous-1",
-    type: "anonymous",
-    category: "Electronic Device",
-    description: "", // Hidden for anonymous
-    location: "Near university library entrance",
-    date: "2024-03-16",
-    time: "14:30",
-    status: "Active",
-    contactEmail: "finder@email.com",
-    contactPhone: "+1234567890",
-  },
-};
+import { getItem } from "@/hooks/useItems";
+import type { Item } from "@/types/item";
 
 const ItemDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
-  const type = searchParams.get("type") || "found";
+  const [item, setItem] = useState<Item | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Get item based on type and id
-  const itemKey = `${type}-${id}`;
-  const item = mockItems[itemKey] || mockItems["found-1"];
+  useEffect(() => {
+    const fetchItem = async () => {
+      if (!id) return;
+      try {
+        const data = await getItem(id);
+        setItem(data);
+      } catch (err) {
+        console.error("Error fetching item:", err);
+        setError("Failed to load item details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItem();
+  }, [id]);
 
   const getBackPath = () => {
+    if (!item) return "/browse";
     switch (item.type) {
       case "lost": return "/browse-lost";
       case "found": return "/browse-found";
@@ -90,6 +51,23 @@ const ItemDetail = () => {
       default: return "/browse";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !item) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <p className="text-destructive mb-4">{error || "Item not found"}</p>
+        <Button onClick={() => navigate("/browse")}>Back to Browse</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-24">
@@ -113,9 +91,9 @@ const ItemDetail = () => {
         {/* Image Section - only for lost/found items */}
         {item.type !== "anonymous" && (
           <Card className="overflow-hidden">
-            {item.image ? (
-              <img 
-                src={item.image} 
+            {item.image_url ? (
+              <img
+                src={item.image_url}
                 alt={item.category}
                 className="w-full h-64 object-cover"
               />
@@ -147,10 +125,10 @@ const ItemDetail = () => {
           <Card className="p-6 space-y-4">
             <h2 className="font-semibold text-lg">Request Contact Information</h2>
             <p className="text-sm text-muted-foreground">
-              If you believe this is your item, request the finder's contact information. 
+              If you believe this is your item, request the finder's contact information.
               They will review your request and share their contact if approved.
             </p>
-            <Button 
+            <Button
               className="w-full"
               onClick={() => navigate(`/request-contact/${id}?category=${item.category}`)}
             >

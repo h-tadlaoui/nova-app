@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Sparkles, MapPin, Clock, Search, Package, ChevronRight, HelpCircle, Loader2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-import { useMyItems, Item } from "@/hooks/useItems";
+import { useMyItems } from "@/hooks/useItems";
+import type { Item } from "@/types/item";
 
 const MyReports = () => {
   const navigate = useNavigate();
@@ -40,8 +41,8 @@ const MyReports = () => {
         <div className="space-y-2 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold">{item.category}</h3>
-            <Badge 
-              variant={item.type === "lost" ? "destructive" : item.type === "anonymous" ? "outline" : "default"} 
+            <Badge
+              variant={item.type === "lost" ? "destructive" : item.type === "anonymous" ? "outline" : "default"}
               className="text-xs"
             >
               {item.type === "lost" ? "Lost" : item.type === "anonymous" ? "Anonymous" : "Found"}

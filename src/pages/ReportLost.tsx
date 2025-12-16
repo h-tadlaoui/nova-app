@@ -16,7 +16,7 @@ const ReportLost = () => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [createdItemId, setCreatedItemId] = useState<string | null>(null);
+  const [createdItemId, setCreatedItemId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     image: null as File | null,
     description: "",
@@ -36,7 +36,7 @@ const ReportLost = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.description || !formData.category || !formData.location) {
       toast.error("Please fill in required fields");
       return;
@@ -250,7 +250,7 @@ const ReportLost = () => {
           </form>
         </Card>
       </div>
-      
+
       <BottomNav />
     </div>
   );

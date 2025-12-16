@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient, setTokens, getAccessToken, clearTokens } from "@/integrations/django/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -33,29 +33,19 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session?.user) {
-          navigate("/");
-        }
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        navigate("/");
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    // Check if user is already logged in
+    const token = getAccessToken();
+    if (token) {
+      navigate("/");
+    }
   }, [navigate]);
 
   const validateForm = () => {
     const schema = isLogin ? loginSchema : signupSchema;
-    const data = isLogin 
-      ? { email, password } 
+    const data = isLogin
+      ? { email, password }
       : { email, password, fullName, phone };
-    
+
     const result = schema.safeParse(data);
     if (!result.success) {
       const fieldErrors: { email?: string; password?: string; fullName?: string; phone?: string } = {};
@@ -72,43 +62,61 @@ const Auth = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        // Login with Django
+        const response = await apiClient('/auth/login/', {
+          method: 'POST',
+          body: JSON.stringify({
+            email,
+            password,
+          }),
         });
-        if (error) throw error;
-        toast({ title: "Welcome back!", description: "You've successfully logged in." });
+
+        if (response.ok) {
+          const { access, refresh } = await response.json();
+          setTokens(access, refresh);
+          toast({ title: "Welcome back!", description: "You've successfully logged in." });
+          navigate("/");
+        } else {
+          const error = await response.json();
+          throw new Error(error.detail || "Login failed");
+        }
       } else {
-        const redirectUrl = `${window.location.origin}/`;
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              full_name: fullName,
-              phone: phone,
-            },
-          },
+        // Register with Django
+        const response = await apiClient('/auth/register/', {
+          method: 'POST',
+          body: JSON.stringify({
+            email,
+            password,
+            password_confirm: password,
+            username: fullName,
+            phone: phone,
+          }),
         });
-        if (error) throw error;
-        toast({ 
-          title: "Account created!", 
-          description: "You can now start using FindBack." 
-        });
+
+        if (response.ok) {
+          toast({
+            title: "Account created!",
+            description: "Please log in with your credentials."
+          });
+          setIsLogin(true);
+          setPassword("");
+        } else {
+          const error = await response.json();
+          throw new Error(error.detail || error.email?.[0] || "Registration failed");
+        }
       }
     } catch (error: any) {
       let message = error.message;
-      if (message.includes("User already registered")) {
+      if (message.includes("already exists") || message.includes("already registered")) {
         message = "This email is already registered. Try logging in instead.";
-      } else if (message.includes("Invalid login credentials")) {
+      } else if (message.includes("Invalid") || message.includes("credentials")) {
         message = "Invalid email or password. Please try again.";
       }
       toast({
@@ -141,8 +149,8 @@ const Auth = () => {
               {isLogin ? "Welcome Back" : "Create Account"}
             </h2>
             <p className="text-muted-foreground text-sm">
-              {isLogin 
-                ? "Sign in to access your reports and matches" 
+              {isLogin
+                ? "Sign in to access your reports and matches"
                 : "Join FindBack to report and find lost items"}
             </p>
           </div>
@@ -247,8 +255,8 @@ const Auth = () => {
               }}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              {isLogin 
-                ? "Don't have an account? Sign up" 
+              {isLogin
+                ? "Don't have an account? Sign up"
                 : "Already have an account? Sign in"}
             </button>
           </div>

@@ -11,19 +11,10 @@ import { useItems } from "@/hooks/useItems";
 const BrowseFound = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const { items, loading } = useItems("found", undefined, "active");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const { items, loading } = useItems("found", undefined, "active", selectedCategory, searchQuery);
 
-  const filteredItems = items.filter((item) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      item.category.toLowerCase().includes(query) ||
-      (item.description?.toLowerCase().includes(query)) ||
-      (item.brand?.toLowerCase().includes(query)) ||
-      (item.color?.toLowerCase().includes(query)) ||
-      item.location.toLowerCase().includes(query)
-    );
-  });
+  const categories = ["All", "Electronics", "Accessories", "Documents", "Keys", "Clothing", "Other"];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20">
@@ -56,13 +47,18 @@ const BrowseFound = () => {
               <Filter className="w-4 h-4" />
             </Button>
           </div>
-          
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            <Badge className="cursor-pointer whitespace-nowrap">All</Badge>
-            <Badge variant="outline" className="cursor-pointer whitespace-nowrap">Electronics</Badge>
-            <Badge variant="outline" className="cursor-pointer whitespace-nowrap">Accessories</Badge>
-            <Badge variant="outline" className="cursor-pointer whitespace-nowrap">Documents</Badge>
-            <Badge variant="outline" className="cursor-pointer whitespace-nowrap">Keys</Badge>
+
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {categories.map((category) => (
+              <Badge
+                key={category}
+                variant={selectedCategory === category ? "secondary" : "outline"}
+                className="cursor-pointer whitespace-nowrap hover:bg-secondary/80"
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </Badge>
+            ))}
           </div>
         </div>
 
@@ -74,21 +70,21 @@ const BrowseFound = () => {
           <>
             {/* Results Count */}
             <p className="text-sm text-muted-foreground mb-4">
-              {filteredItems.length} active found items
+              {items.length} active found items
             </p>
 
             {/* Items Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredItems.map((item) => (
-                <Card 
-                  key={item.id} 
+              {items.map((item) => (
+                <Card
+                  key={item.id}
                   className="p-4 hover:shadow-lg transition-shadow cursor-pointer border-primary/30"
                   onClick={() => navigate(`/item/${item.id}?type=found`)}
                 >
                   <div className="space-y-3">
                     {item.image_url && (
-                      <img 
-                        src={item.image_url} 
+                      <img
+                        src={item.image_url}
                         alt={item.category}
                         className="w-full h-32 object-cover rounded-lg"
                       />
@@ -122,9 +118,9 @@ const BrowseFound = () => {
                       </div>
                     </div>
 
-                    <Button 
+                    <Button
                       variant="outline"
-                      size="sm" 
+                      size="sm"
                       className="w-full"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -139,7 +135,7 @@ const BrowseFound = () => {
             </div>
 
             {/* Empty State */}
-            {filteredItems.length === 0 && (
+            {items.length === 0 && (
               <Card className="p-12 text-center">
                 <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No items found</h3>
@@ -149,7 +145,7 @@ const BrowseFound = () => {
           </>
         )}
       </div>
-      
+
       <BottomNav />
     </div>
   );

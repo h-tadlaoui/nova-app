@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, MessageSquare, Mail, Phone, MapPin, Clock, CheckCircle2, ChevronRight, HelpCircle, Search, Eye, Package, Loader2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-import { useMyContactRequests, ContactRequest as ContactRequestType } from "@/hooks/useContactRequests";
+import { useMyContactRequests } from "@/hooks/useContactRequests";
+import type { ContactRequest as ContactRequestType } from "@/types/item";
 
 const Notifications = () => {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ const Notifications = () => {
 
   const renderRequestCard = (request: ContactRequestType) => (
     <Card key={request.id} className="p-4 space-y-3">
-      <div 
+      <div
         className="flex items-center justify-between cursor-pointer"
         onClick={() => navigate(`/item/${request.item_id}`)}
       >
@@ -79,7 +80,7 @@ const Notifications = () => {
         </div>
         <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
       </div>
-      
+
       {/* Contact Info - Only if approved */}
       {request.status === "approved" && request.item && (
         <div className="border-t border-border pt-3 space-y-2">
@@ -89,7 +90,7 @@ const Notifications = () => {
           </p>
           <div className="flex flex-col gap-2">
             {request.item.contact_email && (
-              <a 
+              <a
                 href={`mailto:${request.item.contact_email}`}
                 className="flex items-center gap-2 text-sm text-primary hover:underline p-2 bg-muted/50 rounded-lg"
                 onClick={(e) => e.stopPropagation()}
@@ -99,7 +100,7 @@ const Notifications = () => {
               </a>
             )}
             {request.item.contact_phone && (
-              <a 
+              <a
                 href={`tel:${request.item.contact_phone}`}
                 className="flex items-center gap-2 text-sm text-primary hover:underline p-2 bg-muted/50 rounded-lg"
                 onClick={(e) => e.stopPropagation()}

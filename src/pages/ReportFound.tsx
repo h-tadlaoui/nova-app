@@ -16,7 +16,7 @@ const ReportFound = () => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [createdItemId, setCreatedItemId] = useState<string | null>(null);
+  const [createdItemId, setCreatedItemId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     image: null as File | null,
     description: "",
@@ -36,7 +36,7 @@ const ReportFound = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.image) {
       toast.error("Photo is required for found item reports");
       return;
@@ -256,7 +256,7 @@ const ReportFound = () => {
           </form>
         </Card>
       </div>
-      
+
       <BottomNav />
     </div>
   );

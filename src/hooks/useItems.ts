@@ -1,73 +1,45 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/integrations/django/client";
 import { toast } from "sonner";
+import type { Item, ItemStatus, ItemType } from "@/types/item";
 
-export type ItemType = "lost" | "found" | "anonymous";
-export type ItemStatus = "active" | "matched" | "recovered" | "closed";
-
-export interface Item {
-  id: string;
-  user_id: string;
-  type: ItemType;
-  category: string;
-  description: string | null;
-  brand: string | null;
-  color: string | null;
-  location: string;
-  date: string;
-  time: string | null;
-  status: ItemStatus;
-  image_url: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export const useItems = (type?: ItemType, userId?: string, status?: ItemStatus) => {
+export const useItems = (type?: ItemType, userId?: string, status?: ItemStatus, category?: string, search?: string) => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      setLoading(true);
-      try {
-        let query = supabase.from("items").select("*");
+  const fetchItems = async () => {
+    setLoading(true);
+    try {
+      // Build query string
+      const params = new URLSearchParams();
+      if (type) params.append('type', type);
+      if (userId) params.append('user', userId);
+      if (status) params.append('status', status);
+      if (category && category !== "All") params.append('category', category);
+      if (search) params.append('search', search);
 
-        if (type) {
-          query = query.eq("type", type);
-        }
+      const response = await apiClient(`/items/?${params.toString()}`);
 
-        if (userId) {
-          query = query.eq("user_id", userId);
-        }
-
-        if (status) {
-          query = query.eq("status", status);
-        }
-
-        query = query.order("created_at", { ascending: false });
-
-        const { data, error: fetchError } = await query;
-
-        if (fetchError) {
-          throw fetchError;
-        }
-
-        setItems(data as Item[]);
-      } catch (err) {
-        console.error("Error fetching items:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch items");
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to fetch items');
       }
-    };
 
+      const data = await response.json();
+      setItems(Array.isArray(data) ? data : data.results || []);
+    } catch (err) {
+      console.error("Error fetching items:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch items");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchItems();
-  }, [type, userId, status]);
+  }, [type, userId, status, category, search]);
 
-  return { items, loading, error, refetch: () => setLoading(true) };
+  return { items, loading, error, refetch: fetchItems };
 };
 
 export const useMyItems = () => {
@@ -79,24 +51,21 @@ export const useMyItems = () => {
     const fetchMyItems = async () => {
       setLoading(true);
       try {
-        const { data: session } = await supabase.auth.getSession();
-        if (!session?.session?.user) {
-          setItems([]);
-          setLoading(false);
-          return;
+        const response = await apiClient('/items/my_items/');
+
+        if (!response.ok) {
+          // If 401, mostly handled by client calling auto-refresh or logout, 
+          // but we might get here if token completely invalid.
+          if (response.status === 401) {
+            setItems([]);
+            return;
+          }
+          throw new Error('Failed to fetch my items');
         }
 
-        const { data, error: fetchError } = await supabase
-          .from("items")
-          .select("*")
-          .eq("user_id", session.session.user.id)
-          .order("created_at", { ascending: false });
-
-        if (fetchError) {
-          throw fetchError;
-        }
-
-        setItems(data as Item[]);
+        const data = await response.json();
+        // Handle paginated response
+        setItems(Array.isArray(data) ? data : data.results || []);
       } catch (err) {
         console.error("Error fetching my items:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch items");
@@ -127,74 +96,64 @@ export const createItem = async (
   }
 ) => {
   try {
-    const { data: session } = await supabase.auth.getSession();
-    if (!session?.session?.user) {
-      throw new Error("You must be logged in to create a report");
+    const formData = new FormData();
+
+    formData.append('type', itemData.type);
+    formData.append('category', itemData.category);
+    formData.append('location', itemData.location);
+    formData.append('date', itemData.date);
+
+    if (itemData.description) formData.append('description', itemData.description);
+    if (itemData.brand) formData.append('brand', itemData.brand);
+    if (itemData.color) formData.append('color', itemData.color);
+    if (itemData.time) formData.append('time', itemData.time);
+    if (itemData.contact_email) formData.append('contact_email', itemData.contact_email);
+    if (itemData.contact_phone) formData.append('contact_phone', itemData.contact_phone);
+    if (itemData.image) formData.append('image', itemData.image);
+
+    const response = await apiClient('/items/', {
+      method: 'POST',
+      body: formData, // apiClient will NOT set Content-Type to json if body is not string
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      const errorMessage = Object.values(errorData).flat().join(', ') || 'Failed to create item';
+      throw new Error(errorMessage);
     }
 
-    let imageUrl: string | null = null;
-
-    // Upload image if provided
-    if (itemData.image) {
-      const fileExt = itemData.image.name.split(".").pop();
-      const fileName = `${session.session.user.id}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("item-images")
-        .upload(fileName, itemData.image);
-
-      if (uploadError) {
-        console.error("Image upload error:", uploadError);
-        toast.error("Failed to upload image, but continuing with report");
-      } else {
-        const { data: urlData } = supabase.storage
-          .from("item-images")
-          .getPublicUrl(fileName);
-        imageUrl = urlData.publicUrl;
-      }
-    }
-
-    // Insert item
-    const { data, error } = await supabase
-      .from("items")
-      .insert({
-        user_id: session.session.user.id,
-        type: itemData.type,
-        category: itemData.category,
-        description: itemData.description || null,
-        brand: itemData.brand || null,
-        color: itemData.color || null,
-        location: itemData.location,
-        date: itemData.date,
-        time: itemData.time || null,
-        contact_email: itemData.contact_email || null,
-        contact_phone: itemData.contact_phone || null,
-        image_url: imageUrl,
-        status: "active",
-      })
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    return data as Item;
+    return await response.json() as Item;
   } catch (err) {
     console.error("Error creating item:", err);
     throw err;
   }
 };
 
-export const updateItemStatus = async (itemId: string, status: ItemStatus) => {
-  try {
-    const { error } = await supabase
-      .from("items")
-      .update({ status })
-      .eq("id", itemId);
 
-    if (error) {
-      throw error;
+export const getItem = async (itemId: string | number) => {
+  try {
+    const response = await apiClient(`/items/${itemId}/`);
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch item');
+    }
+
+    return await response.json() as Item;
+  } catch (err) {
+    console.error("Error fetching item:", err);
+    throw err;
+  }
+};
+
+export const updateItemStatus = async (itemId: number | string, status: ItemStatus) => {
+  try {
+    const response = await apiClient(`/items/${itemId}/update_status/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update item status');
     }
   } catch (err) {
     console.error("Error updating item status:", err);

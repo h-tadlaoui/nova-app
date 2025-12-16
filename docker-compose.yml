@@ -1,0 +1,29 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    build: ./nova-backend
+    volumes:
+      - ./nova-backend/db_new.sqlite3:/app/db_new.sqlite3
+      - ./nova-backend/media:/app/media
+    environment:
+      - SECRET_KEY=django-insecure-change-me-prod-key
+      - DEBUG=False
+      - ALLOWED_HOSTS=*
+      - AI_SERVICE_URL=http://ai_service:3300
+    depends_on:
+      - ai_service
+    restart: always
+
+  ai_service:
+    build: ./FindBack_AI
+    restart: always
+    # expose port if needed, but backend talks to it internally via http://ai_service:3300
