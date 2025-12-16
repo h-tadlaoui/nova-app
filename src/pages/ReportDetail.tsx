@@ -37,9 +37,10 @@ interface ReportItem {
   claimInfo?: ClaimInfo;
 }
 
+import { getItem } from "@/hooks/useItems";
+
 const ReportDetail = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
   const { id } = useParams();
   const [item, setItem] = useState<ReportItem | null>(null);
   const [loading, setLoading] = useState(true);
