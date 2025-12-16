@@ -40,92 +40,55 @@ interface ReportItem {
 const ReportDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { id } = useParams();
+  const [item, setItem] = useState<ReportItem | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Mock data - in production this would come from the database
-  const allReports: ReportItem[] = [
-    {
-      id: "lost-1",
-      type: "lost",
-      category: "Phone",
-      description: "Black iPhone 13, cracked screen protector",
-      location: "Central Park",
-      date: "2024-03-15",
-      status: "Matched",
-      image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop",
-      matchInfo: {
-        userId: "user-123",
-        userName: "John D.",
-        itemDescription: "Found black iPhone near Central Park bench",
-        contactRequestStatus: "approved",
-        contactEmail: "john.d@email.com",
-        contactPhone: "+1 555-123-4567",
-      },
-    },
-    {
-      id: "lost-2",
-      type: "lost",
-      category: "Wallet",
-      description: "Brown leather wallet with cards",
-      location: "Downtown Coffee Shop",
-      date: "2024-03-14",
-      status: "Matched",
-      image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&h=300&fit=crop",
-      matchInfo: {
-        userId: "user-456",
-        userName: "Sarah M.",
-        itemDescription: "Brown wallet found at coffee shop",
-        contactRequestStatus: "pending",
-      },
-    },
-    {
-      id: "lost-3",
-      type: "lost",
-      category: "Headphones",
-      description: "AirPods Pro in white case",
-      location: "Gym on 5th Ave",
-      date: "2024-03-12",
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400&h=300&fit=crop",
-    },
-    {
-      id: "found-1",
-      type: "found",
-      category: "Keys",
-      description: "Set of keys with blue keychain",
-      location: "City Library",
-      date: "2024-03-16",
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=400&h=300&fit=crop",
-    },
-    {
-      id: "anon-1",
-      type: "anonymous",
-      category: "Umbrella",
-      description: "Black umbrella with wooden handle",
-      location: "Bus Stop on Main St",
-      date: "2024-03-17",
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1534309466160-70b22cc6252c?w=400&h=300&fit=crop",
-    },
-    {
-      id: "anon-2",
-      type: "anonymous",
-      category: "Bag",
-      description: "Blue backpack with laptop inside",
-      location: "Train Station",
-      date: "2024-03-13",
-      status: "Claimed",
-      image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop",
-      claimInfo: {
-        claimerId: "user-789",
-        claimerName: "Mike R.",
-        claimStatus: "approved",
-      },
-    },
-  ];
+  useEffect(() => {
+    const fetchItem = async () => {
+      if (!id) return;
+      try {
+        // Import getItem dynamically or assume it's imported at top
+        // But cleaner to add import at top. 
+        // For this block, I will assume I added the import in a separate edit or rely on the user to compile? 
+        // No, I should do a full file replacement or multiple chunks.
+        // Let's us replace_file_content to replace the whole logic block.
+        const { getItem } = await import("@/hooks/useItems");
+        const data = await getItem(id);
+        // Transform API data to ReportItem interface if needed, or update interface
+        // For now, cast it or map it.
+        // The API returns 'Item' type. ReportDetail expects 'ReportItem'.
+        // Let's cast for now to get it working, mapping fields as best as possible.
+        const mappedItem: ReportItem = {
+          id: data.id.toString(),
+          type: data.type,
+          category: data.category,
+          description: data.description || "",
+          location: data.location,
+          date: data.date,
+          status: data.status as any, // Cast status
+          image: data.image_url || undefined,
+          // matchInfo and claimInfo are likely missing from basic item API
+          // We will handle them later or leave undefined
+        };
+        setItem(mappedItem);
+      } catch (error) {
+        console.error("Failed to fetch report:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchItem();
+  }, [id]);
 
-  const item = allReports.find(r => r.id === id);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background pb-20 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!item) {
     return (
@@ -217,8 +180,8 @@ const ReportDetail = () => {
         {/* Item Image */}
         {item.image && (
           <Card className="overflow-hidden">
-            <img 
-              src={item.image} 
+            <img
+              src={item.image}
               alt={item.category}
               className="w-full h-48 object-cover"
             />
@@ -349,14 +312,14 @@ const ReportDetail = () => {
               </div>
             </div>
             <Badge className={
-              item.claimInfo.claimStatus === "approved" 
+              item.claimInfo.claimStatus === "approved"
                 ? "bg-green-500/10 text-green-600 border-green-500/20"
                 : item.claimInfo.claimStatus === "pending"
-                ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
-                : "bg-red-500/10 text-red-600 border-red-500/20"
+                  ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+                  : "bg-red-500/10 text-red-600 border-red-500/20"
             }>
-              {item.claimInfo.claimStatus === "approved" ? "Claim Approved" : 
-               item.claimInfo.claimStatus === "pending" ? "Claim Pending" : "Claim Denied"}
+              {item.claimInfo.claimStatus === "approved" ? "Claim Approved" :
+                item.claimInfo.claimStatus === "pending" ? "Claim Pending" : "Claim Denied"}
             </Badge>
           </Card>
         )}
@@ -365,7 +328,7 @@ const ReportDetail = () => {
         <div className="space-y-3 pt-4">
           {/* Found My Item Button - Only for lost items with approved contact */}
           {item.type === "lost" && item.matchInfo?.contactRequestStatus === "approved" && item.status !== "Recovered" && (
-            <Button 
+            <Button
               onClick={handleFoundMyItem}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
               size="lg"
