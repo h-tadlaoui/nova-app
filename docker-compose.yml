@@ -28,4 +28,6 @@ services:
   ai_service:
     build: ./FindBack_AI
     restart: always
+    volumes:
+      - ./ai_data:/app/data
     # expose port if needed, but backend talks to it internally via http://ai_service:3300
