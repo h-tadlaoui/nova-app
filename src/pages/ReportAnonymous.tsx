@@ -25,7 +25,7 @@ const ReportAnonymous = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.location || !formData.dateTime || !formData.contactEmail) {
       toast.error("Please provide location, time, and email");
       return;
@@ -83,13 +83,13 @@ const ReportAnonymous = () => {
         <Alert className="mb-6 border-anonymous/50 bg-anonymous/5">
           <AlertCircle className="h-4 w-4 text-anonymous" />
           <AlertDescription>
-            <strong>For valuable or sensitive items.</strong> No visual or descriptive details will be shared publicly. 
+            <strong>For valuable or sensitive items.</strong> No visual or descriptive details will be shared publicly.
             Only location and time are visible to help legitimate owners contact you.
           </AlertDescription>
         </Alert>
 
         <Card className="p-6 md:p-8 border-anonymous/30">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Category - Optional */}
             <div className="space-y-2">
               <Label htmlFor="category">General Category (Optional)</Label>
@@ -166,7 +166,7 @@ const ReportAnonymous = () => {
                     type="email"
                     placeholder="your@email.com"
                     value={formData.contactEmail}
-                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value.trim() })}
                     required
                   />
                 </div>
@@ -174,7 +174,8 @@ const ReportAnonymous = () => {
                   <Label htmlFor="phone">Phone (Optional)</Label>
                   <Input
                     id="phone"
-                    type="tel"
+                    type="text"
+                    inputMode="tel"
                     placeholder="+1234567890"
                     value={formData.contactPhone}
                     onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
@@ -199,9 +200,9 @@ const ReportAnonymous = () => {
 
             {/* Submit Button */}
             <div className="space-y-3 pt-4">
-              <Button 
-                type="submit" 
-                className="w-full bg-anonymous hover:bg-anonymous/90" 
+              <Button
+                type="submit"
+                className="w-full bg-anonymous hover:bg-anonymous/90"
                 size="lg"
                 disabled={isSubmitting}
               >
@@ -221,7 +222,7 @@ const ReportAnonymous = () => {
           </form>
         </Card>
       </div>
-      
+
       <BottomNav />
     </div>
   );

@@ -103,7 +103,7 @@ const ReportFound = () => {
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <Card className="p-6 md:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Image Upload - Required */}
             <div className="space-y-2">
               <Label>Item Photo *</Label>
@@ -218,14 +218,15 @@ const ReportFound = () => {
                     type="email"
                     placeholder="your@email.com"
                     value={formData.contactEmail}
-                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value.trim() })}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone (Optional)</Label>
                   <Input
                     id="phone"
-                    type="tel"
+                    type="text"
+                    inputMode="tel"
                     placeholder="+1234567890"
                     value={formData.contactPhone}
                     onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
