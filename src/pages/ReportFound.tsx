@@ -253,6 +253,7 @@ const ReportFound = () => {
               <p className="text-xs text-center text-muted-foreground">
                 Our AI will automatically search for the owner and notify you
               </p>
+              <p className="text-[10px] text-center text-muted-foreground/50">v1.1 (Mobile Fix)</p>
             </div>
           </form>
         </Card>
